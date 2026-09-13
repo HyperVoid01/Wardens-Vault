@@ -19,4 +19,17 @@
         android:textColor="#3F51B5"
         android:textSize="24sp"
         android:textStyle="bold" />
+
+    <!-- Spacer: pushes the nav bar to the bottom -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:menu="@menu/bottom_nav_menu" />
+
 </LinearLayout>

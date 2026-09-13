@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_bedroom"
+        android:icon="@drawable/ic_bed"
+        android:title="Bedroom" />
+    <item
+        android:id="@+id/nav_map"
+        android:icon="@drawable/ic_map"
+        android:title="Quests" />
+    <item
+        android:id="@+id/nav_helmet"
+        android:icon="@drawable/ic_helmet"
+        android:title="Gear" />
+</menu>
