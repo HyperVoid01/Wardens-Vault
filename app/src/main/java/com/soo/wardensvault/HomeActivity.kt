@@ -33,6 +33,10 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, CategoryTotalsActivity::class.java))
         }
 
+        findViewById<Button>(R.id.btnBudgetGoal).setOnClickListener {
+            startActivity(Intent(this, BudgetGoalActivity::class.java))
+        }
+
         //temporary mapping - reassign these to whichever nav items fit the theme once
         //the expense-list and totals screens exist too
         findViewById<BottomNavigationView>(R.id.bottomNavigationView).setOnItemSelectedListener { item ->

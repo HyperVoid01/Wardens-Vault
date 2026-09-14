@@ -2,8 +2,6 @@ package com.soo.wardensvault
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 
 class ExpenseViewModel(application: Application) : AndroidViewModel(application) {
     private val expenseDao = AppDatabase.getDatabase(application).expenseDao()
@@ -33,7 +31,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         return expenseDao.getTotalSpentForPeriod(userId, from, to)
     }
 
-    fun setGoal(userId: Int, min: Double, max: Double) = viewModelScope.launch {
+    suspend fun setGoal(userId: Int, min: Double, max: Double) {
         val existing = budgetGoalDao.getGoalForUser(userId)
         val goal = BudgetGoal(id = existing?.id ?: 0, userId = userId, minGoal = min, maxGoal = max)
         budgetGoalDao.setGoal(goal)
