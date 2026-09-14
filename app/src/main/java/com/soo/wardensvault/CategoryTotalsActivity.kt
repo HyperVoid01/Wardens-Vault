@@ -1,16 +1,12 @@
 package com.soo.wardensvault
 
-import android.app.AlertDialog
 import android.app.DatePickerDialog
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
@@ -21,30 +17,27 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class ExpenseListActivity : AppCompatActivity() {
+class CategoryTotalsActivity : AppCompatActivity() {
     private lateinit var viewModel: ExpenseViewModel
-    private lateinit var lvExpenses: ListView
+    private lateinit var lvCategoryTotals: ListView
     private lateinit var tvPeriod: TextView
-    private lateinit var tvTotal: TextView
+    private lateinit var tvGrandTotal: TextView
     private var userId: Int = -1
 
-    //defaults to the current calendar month until the user picks their own range
+    //defaults to the current calendar month, same convention as the expense list screen
     private var fromMillis: Long = DateUtils.startOfCurrentMonth()
     private var toMillis: Long = DateUtils.endOfToday()
 
     private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-    private val dateTimeFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
-    private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_expense_list)
+        setContentView(R.layout.activity_category_totals)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -59,9 +52,9 @@ class ExpenseListActivity : AppCompatActivity() {
         }
 
         viewModel = ViewModelProvider(this)[ExpenseViewModel::class.java]
-        lvExpenses = findViewById(R.id.lvExpenses)
+        lvCategoryTotals = findViewById(R.id.lvCategoryTotals)
         tvPeriod = findViewById(R.id.tvPeriod)
-        tvTotal = findViewById(R.id.tvTotal)
+        tvGrandTotal = findViewById(R.id.tvGrandTotal)
 
         updatePeriodLabel()
 
@@ -80,11 +73,11 @@ class ExpenseListActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btnLoad).setOnClickListener {
-            loadExpenses()
+            loadTotals()
         }
 
-        //load the current month's expenses immediately on open
-        loadExpenses()
+        //load the current month's totals immediately on open
+        loadTotals()
     }
 
     private fun pickDate(currentMillis: Long, onPicked: (Long) -> Unit) {
@@ -105,67 +98,39 @@ class ExpenseListActivity : AppCompatActivity() {
         tvPeriod.text = "${dateFormat.format(fromMillis)} - ${dateFormat.format(toMillis)}"
     }
 
-    private fun loadExpenses() {
+    private fun loadTotals() {
         if (fromMillis > toMillis) {
             Toast.makeText(this, "'From' date must be before 'To' date", Toast.LENGTH_SHORT)
                 .show()
             return
         }
         lifecycleScope.launch {
-            val expenses = viewModel.getExpensesWithCategoryForPeriod(userId, fromMillis, toMillis)
-            val total = viewModel.getTotalSpentForPeriod(userId, fromMillis, toMillis)
-            tvTotal.text = "Total: R${String.format(Locale.getDefault(), "%.2f", total)}"
-            lvExpenses.adapter = ExpenseListAdapter(expenses)
+            val totals = viewModel.getCategoryTotalsForPeriod(userId, fromMillis, toMillis)
+            val grandTotal = totals.sumOf { it.total }
+            tvGrandTotal.text =
+                "Grand Total: R${String.format(Locale.getDefault(), "%.2f", grandTotal)}"
+            lvCategoryTotals.adapter = CategoryTotalAdapter(totals)
         }
     }
 
-    private fun showPhotoDialog(photoPath: String) {
-        val file = File(photoPath)
-        if (!file.exists()) {
-            Toast.makeText(this, "Photo file not found", Toast.LENGTH_SHORT).show()
-            return
-        }
-        val imageView = ImageView(this).apply {
-            setImageBitmap(BitmapFactory.decodeFile(photoPath))
-            adjustViewBounds = true
-        }
-        AlertDialog.Builder(this)
-            .setTitle("Expense Photo")
-            .setView(imageView)
-            .setPositiveButton("Close", null)
-            .show()
-    }
-
-    //simple custom adapter - each row shows category, description, amount, date/time,
-    //and a "Photo" button that only appears when photoPath is non-null
-    private inner class ExpenseListAdapter(
-        private val items: List<ExpenseWithCategory>
+    //each row: category name + how much was spent in it over the selected period
+    //(categories with no expenses in range still show, at $0.00 - COALESCE in the
+    //DAO query guarantees that rather than silently omitting them)
+    private inner class CategoryTotalAdapter(
+        private val items: List<CategoryTotal>
     ) : BaseAdapter() {
         override fun getCount() = items.size
         override fun getItem(position: Int) = items[position]
-        override fun getItemId(position: Int) = items[position].id.toLong()
+        override fun getItemId(position: Int) = items[position].categoryId.toLong()
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            val view = convertView ?: LayoutInflater.from(this@ExpenseListActivity)
-                .inflate(R.layout.item_expense, parent, false)
+            val view = convertView ?: LayoutInflater.from(this@CategoryTotalsActivity)
+                .inflate(R.layout.item_category_total, parent, false)
             val item = items[position]
 
             view.findViewById<TextView>(R.id.tvCategoryName).text = item.categoryName
-            view.findViewById<TextView>(R.id.tvDescription).text = item.description
-            view.findViewById<TextView>(R.id.tvDateTime).text =
-                "${dateFormat.format(item.date)}, ${timeFormat.format(item.startTime)} - " +
-                timeFormat.format(item.endTime)
-            view.findViewById<TextView>(R.id.tvAmount).text =
-                "R${String.format(Locale.getDefault(), "%.2f", item.amount)}"
-
-            val btnPhoto = view.findViewById<Button>(R.id.btnViewPhoto)
-            if (item.photoPath != null) {
-                btnPhoto.visibility = View.VISIBLE
-                btnPhoto.setOnClickListener { showPhotoDialog(item.photoPath) }
-            } else {
-                btnPhoto.visibility = View.GONE
-                btnPhoto.setOnClickListener(null)
-            }
+            view.findViewById<TextView>(R.id.tvCategoryTotal).text =
+                "R${String.format(Locale.getDefault(), "%.2f", item.total)}"
 
             return view
         }
