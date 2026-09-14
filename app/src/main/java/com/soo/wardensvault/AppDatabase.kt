@@ -11,7 +11,10 @@ import androidx.room.RoomDatabase
 class must contain @Database annotation and an entities array that
 contains all data entities associated with the database
  */
-@Database(entities = [User::class], version = 1)
+@Database(
+    entities = [User::class, Category::class, Expense::class, BudgetGoal::class],
+    version = 2
+)
 //abstract class because it extends RoomDatabase
 abstract class AppDatabase : RoomDatabase() {
     /*
@@ -20,6 +23,9 @@ abstract class AppDatabase : RoomDatabase() {
      */
 
     abstract fun userDao(): UserDao
+    abstract fun categoryDao(): CategoryDao
+    abstract fun expenseDao(): ExpenseDao
+    abstract fun budgetGoalDao(): BudgetGoalDao
 
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null
@@ -31,7 +37,12 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "user_db"
-                ).build().also { INSTANCE = it }
+                )
+                    //version bumped 1 -> 2 for the new tables; destructive migration
+                    //is fine while the schema is still being actively built.
+                    //Switch to a real Migration() once you have real user data to keep.
+                    .fallbackToDestructiveMigration(true)
+                    .build().also { INSTANCE = it }
             }
         }
     }
