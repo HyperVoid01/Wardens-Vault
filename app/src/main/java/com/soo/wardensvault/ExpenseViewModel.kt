@@ -17,6 +17,14 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         return expenseDao.getExpensesForPeriod(userId, from, to)
     }
 
+    suspend fun getExpensesWithCategoryForPeriod(
+        userId: Int,
+        from: Long,
+        to: Long
+    ): List<ExpenseWithCategory> {
+        return expenseDao.getExpensesWithCategoryForPeriod(userId, from, to)
+    }
+
     suspend fun getCategoryTotalsForPeriod(userId: Int, from: Long, to: Long): List<CategoryTotal> {
         return expenseDao.getCategoryTotalsForPeriod(userId, from, to)
     }

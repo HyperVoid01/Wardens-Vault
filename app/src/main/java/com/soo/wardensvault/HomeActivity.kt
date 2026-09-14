@@ -2,6 +2,7 @@ package com.soo.wardensvault
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -23,6 +24,10 @@ class HomeActivity : AppCompatActivity() {
 
         val fullName = intent.getStringExtra("fullName")
         findViewById<TextView>(R.id.tvWelcome).text = "Welcome, $fullName!"
+
+        findViewById<Button>(R.id.btnViewExpenses).setOnClickListener {
+            startActivity(Intent(this, ExpenseListActivity::class.java))
+        }
 
         //temporary mapping - reassign these to whichever nav items fit the theme once
         //the expense-list and totals screens exist too

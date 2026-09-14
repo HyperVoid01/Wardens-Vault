@@ -17,6 +17,23 @@ interface ExpenseDao {
     )
     suspend fun getExpensesForPeriod(userId: Int, from: Long, to: Long): List<Expense>
 
+    //Same period list, but joined with category name - drives the expense list screen
+    @Query(
+        "SELECT expenses.id AS id, categories.name AS categoryName, " +
+        "expenses.description AS description, expenses.amount AS amount, " +
+        "expenses.date AS date, expenses.startTime AS startTime, expenses.endTime AS endTime, " +
+        "expenses.photoPath AS photoPath " +
+        "FROM expenses " +
+        "INNER JOIN categories ON categories.id = expenses.categoryId " +
+        "WHERE expenses.userId = :userId AND expenses.date BETWEEN :from AND :to " +
+        "ORDER BY expenses.date DESC"
+    )
+    suspend fun getExpensesWithCategoryForPeriod(
+        userId: Int,
+        from: Long,
+        to: Long
+    ): List<ExpenseWithCategory>
+
     //Total spent per category within a period - drives the "totals" screen
     @Query(
         "SELECT categories.id AS categoryId, categories.name AS categoryName, " +
