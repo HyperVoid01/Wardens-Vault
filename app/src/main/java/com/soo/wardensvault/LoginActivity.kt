@@ -40,7 +40,7 @@ class LoginActivity : AppCompatActivity() {
                 val user = viewModel.loginUser(username, password)
                 //procedures to follow depending on result
                 if (user != null) {
-                    SessionManager.saveLoggedInUser(this@LoginActivity, user.id)
+                    SessionManager.saveLoggedInUser(this@LoginActivity, user.id, user.fullName)
                     val intent = Intent(this@LoginActivity, HomeActivity::class.java)
                     intent.putExtra("fullName", user.fullName)
                     startActivity(intent)

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_brick_wall"
+    android:orientation="vertical"
+    tools:context=".MapMenuActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:id="@+id/rowCastle"
+                style="@style/MenuRow">
+                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_castle" android:contentDescription="Castle" />
+                <TextView style="@style/MenuRowLabel" android:text="Castle" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowDungeon"
+                style="@style/MenuRow">
+                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_dungeon" android:contentDescription="Dungeon" />
+                <TextView style="@style/MenuRowLabel" android:text="Dungeon" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowTreasury"
+                style="@style/MenuRow">
+                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_treasury" android:contentDescription="Treasury" />
+                <TextView style="@style/MenuRowLabel" android:text="Treasury" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowMarket"
+                style="@style/MenuRow">
+                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_market" android:contentDescription="Market" />
+                <TextView style="@style/MenuRowLabel" android:text="Market" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowReports"
+                style="@style/MenuRow">
+                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_reports" android:contentDescription="Reports" />
+                <TextView style="@style/MenuRowLabel" android:text="Reports" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowArmory"
+                style="@style/MenuRow">
+                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_armory" android:contentDescription="Armory" />
+                <TextView style="@style/MenuRowLabel" android:text="Armory" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowProfile"
+                style="@style/MenuRow">
+                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_profile" android:contentDescription="Profile" />
+                <TextView style="@style/MenuRowLabel" android:text="Profile" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#D95763"
+        app:itemIconTint="@null"
+        app:itemIconSize="40dp"
+        app:labelVisibilityMode="unlabeled"
+        app:menu="@menu/bottom_nav_menu" />
+
+</LinearLayout>

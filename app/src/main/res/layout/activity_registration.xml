@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#2196F3"
+    android:background="@drawable/ic_wall"
     tools:context=".RegistrationActivity">
 
     <LinearLayout
@@ -19,21 +19,30 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:hint="Full Name"
-            android:inputType="textPersonName" />
+            android:inputType="textPersonName"
+            android:textColor="@color/white"
+            android:textColorHighlight="@color/white"
+            android:textColorHint="@color/white" />
 
         <EditText
             android:id="@+id/etUsername"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:hint="Username"
-            android:inputType="text" />
+            android:inputType="text"
+            android:textColor="@color/white"
+            android:textColorHighlight="@color/white"
+            android:textColorHint="@color/white" />
 
         <EditText
             android:id="@+id/etPassword"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:hint="Password"
-            android:inputType="textPassword" />
+            android:inputType="textPassword"
+            android:textColor="@color/white"
+            android:textColorHighlight="@color/white"
+            android:textColorHint="@color/white" />
 
         <Button
             android:id="@+id/btnSubmit"

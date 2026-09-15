@@ -4,7 +4,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#2196F3"
+    android:background="@drawable/ic_wall"
     tools:context=".CreateExpenseActivity">
 
     <LinearLayout
@@ -34,7 +34,10 @@
             android:layout_height="48dp"
             android:layout_marginTop="16dp"
             android:hint="Description"
-            android:inputType="text" />
+            android:inputType="text"
+            android:textColor="@color/white"
+            android:textColorHighlight="@color/white"
+            android:textColorHint="@color/white" />
 
         <EditText
             android:id="@+id/etAmount"
@@ -42,7 +45,10 @@
             android:layout_height="48dp"
             android:layout_marginTop="16dp"
             android:hint="Amount spent"
-            android:inputType="numberDecimal" />
+            android:inputType="numberDecimal"
+            android:textColor="@color/white"
+            android:textColorHighlight="@color/white"
+            android:textColorHint="@color/white" />
 
         <Button
             android:id="@+id/btnPickDate"

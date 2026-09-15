@@ -11,10 +11,14 @@ needing it passed through every Intent.
 object SessionManager {
     private const val PREFS_NAME = "warden_session"
     private const val KEY_USER_ID = "logged_in_user_id"
+    private const val KEY_FULL_NAME = "logged_in_full_name"
 
-    fun saveLoggedInUser(context: Context, userId: Int) {
+    fun saveLoggedInUser(context: Context, userId: Int, fullName: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putInt(KEY_USER_ID, userId).apply()
+        prefs.edit()
+            .putInt(KEY_USER_ID, userId)
+            .putString(KEY_FULL_NAME, fullName)
+            .apply()
     }
 
     //returns -1 if no user is logged in
@@ -23,8 +27,13 @@ object SessionManager {
         return prefs.getInt(KEY_USER_ID, -1)
     }
 
+    fun getLoggedInFullName(context: Context): String? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_FULL_NAME, null)
+    }
+
     fun clearSession(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().remove(KEY_USER_ID).apply()
+        prefs.edit().clear().apply()
     }
 }
