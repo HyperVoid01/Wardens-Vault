@@ -8,7 +8,7 @@ import com.soo.wardensvault.User
 
 /*
 User Data Object
-Contains methods that your app will use to interact with
+Contains methods to interact with
 data in the users table
  */
 

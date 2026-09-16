@@ -114,8 +114,6 @@ class CategoryTotalsActivity : AppCompatActivity() {
     }
 
     //each row: category name + how much was spent in it over the selected period
-    //(categories with no expenses in range still show, at $0.00 - COALESCE in the
-    //DAO query guarantees that rather than silently omitting them)
     private inner class CategoryTotalAdapter(
         private val items: List<CategoryTotal>
     ) : BaseAdapter() {

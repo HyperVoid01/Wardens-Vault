@@ -60,7 +60,7 @@ class HomeActivity : AppCompatActivity() {
         if (userId != -1) loadBudgetStatus()
     }
 
-    //shows this month's spending as both a progress bar (against the max goal) and
+    //shows this month's spending as both a progress bar and
     //a "Gold" figure - remaining budget if a goal is set, otherwise total spent so far
     private fun loadBudgetStatus() {
         lifecycleScope.launch {

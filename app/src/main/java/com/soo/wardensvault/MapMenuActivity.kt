@@ -11,11 +11,11 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 /*
 Map menu - the themed hub screen. Each row maps to one of the app's real features:
   Castle   -> Home dashboard
-  Dungeon  -> log a new expense (venturing out costs you)
-  Treasury -> category totals (how much has gone where)
-  Market   -> budget goal (set your spending limits)
+  Dungeon  -> log a new expense
+  Treasury -> category totals
+  Market   -> budget goal
   Reports  -> expense history list
-  Armory   -> manage categories (your equipment loadout)
+  Armory   -> manage categories
   Profile  -> account / logout
  */
 class MapMenuActivity : AppCompatActivity() {

@@ -6,10 +6,8 @@ import androidx.room.PrimaryKey
 
 /*
 Expense data entity.
-date/startTime/endTime are stored as epoch millis (Long) so date-range
-queries (SELECT ... WHERE date BETWEEN :from AND :to) work directly in SQL.
-photoPath stores the file path on device storage, NOT the image itself -
-Room/SQLite should never store raw image blobs for this use case.
+date/startTime/endTime are stored as Long so date-range queries work directly in SQL.
+photoPath stores the file path on device storage, Not the image itself
  */
 @Entity(
     tableName = "expenses",
@@ -34,8 +32,8 @@ data class Expense(
     val categoryId: Int,
     val amount: Double,
     val date: Long,       // epoch millis, the calendar day of the expense
-    val startTime: Long,  // epoch millis
-    val endTime: Long,    // epoch millis
+    val startTime: Long,
+    val endTime: Long,
     val description: String,
     val photoPath: String? = null
 )

@@ -23,50 +23,188 @@
             <LinearLayout
                 android:id="@+id/rowCastle"
                 style="@style/MenuRow">
-                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_castle" android:contentDescription="Castle" />
-                <TextView style="@style/MenuRowLabel" android:text="Castle" />
+
+                <ImageView
+                    style="@style/MenuRowIcon"
+                    android:contentDescription="Castle"
+                    android:src="@drawable/ic_menu_castle" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/MenuRowLabel"
+                        android:text="Castle"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/tvHint"
+                        style="@style/MenuRowLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Home"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowMarket"
+                style="@style/MenuRow">
+
+                <ImageView
+                    style="@style/MenuRowIcon"
+                    android:contentDescription="Market"
+                    android:src="@drawable/ic_menu_market" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/MenuRowLabel"
+                        android:text="Market"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/tvHint4"
+                        style="@style/MenuRowLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Budget Goal"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowArmory"
+                style="@style/MenuRow">
+
+                <ImageView
+                    style="@style/MenuRowIcon"
+                    android:contentDescription="Armory"
+                    android:src="@drawable/ic_menu_armory" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/MenuRowLabel"
+                        android:text="Armory"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/tvHint6"
+                        style="@style/MenuRowLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Add Category"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/rowDungeon"
                 style="@style/MenuRow">
                 <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_dungeon" android:contentDescription="Dungeon" />
-                <TextView style="@style/MenuRowLabel" android:text="Dungeon" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/MenuRowLabel"
+                        android:text="Dungeon"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/tvHint2"
+                        style="@style/MenuRowLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Add Expenses"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/rowTreasury"
                 style="@style/MenuRow">
                 <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_treasury" android:contentDescription="Treasury" />
-                <TextView style="@style/MenuRowLabel" android:text="Treasury" />
-            </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/rowMarket"
-                style="@style/MenuRow">
-                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_market" android:contentDescription="Market" />
-                <TextView style="@style/MenuRowLabel" android:text="Market" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/MenuRowLabel"
+                        android:text="Treasury"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/tvHint3"
+                        style="@style/MenuRowLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Category Totals"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/rowReports"
                 style="@style/MenuRow">
                 <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_reports" android:contentDescription="Reports" />
-                <TextView style="@style/MenuRowLabel" android:text="Reports" />
-            </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/rowArmory"
-                style="@style/MenuRow">
-                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_armory" android:contentDescription="Armory" />
-                <TextView style="@style/MenuRowLabel" android:text="Armory" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/MenuRowLabel"
+                        android:text="Reports"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/tvHint5"
+                        style="@style/MenuRowLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Expense History"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/rowProfile"
                 style="@style/MenuRow">
                 <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_profile" android:contentDescription="Profile" />
-                <TextView style="@style/MenuRowLabel" android:text="Profile" />
+
+                <TextView
+                    style="@style/MenuRowLabel"
+                    android:text="Profile"
+                    android:textSize="24sp" />
             </LinearLayout>
 
         </LinearLayout>

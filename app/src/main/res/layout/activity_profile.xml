@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_brick_wall"
+    android:background="@drawable/ic_wall"
     android:orientation="vertical"
     tools:context=".ProfileActivity">
 
@@ -15,8 +15,8 @@
         android:layout_marginTop="40dp"
         android:gravity="center"
         android:text="Profile"
-        android:textColor="#5C6BC0"
-        android:textSize="24sp"
+        android:textColor="@color/light_blue"
+        android:textSize="34sp"
         android:textStyle="bold" />
 
     <ImageView

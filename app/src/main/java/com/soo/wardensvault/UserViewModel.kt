@@ -11,8 +11,7 @@ used to manage user-related operations
 acts as bridge between UI and RoomDB
  */
 
-//UserViewModel extends AndroidViewModel - gives it access to app context
-//useful for initializing RoomDB
+//UserViewModel extends AndroidViewModel which gives it access to app context
 class UserViewModel(application: Application) : AndroidViewModel(application) {
     //Gets an instance of UserDao from RoomDB
     private val userDao = AppDatabase.getDatabase(application).userDao()

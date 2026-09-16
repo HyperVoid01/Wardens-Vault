@@ -16,7 +16,7 @@
         android:layout_marginTop="40dp"
         android:gravity="center"
         android:text="Good Morning,\n[Username]"
-        android:textColor="#5C6BC0"
+        android:textColor="@color/white"
         android:textSize="22sp"
         android:textStyle="bold" />
 
@@ -27,7 +27,7 @@
         android:layout_marginTop="32dp"
         android:gravity="center"
         android:text="This Month's Budget"
-        android:textColor="#5C6BC0"
+        android:textColor="@color/white"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -50,7 +50,7 @@
         android:layout_marginTop="20dp"
         android:gravity="center"
         android:text="Gold: 0"
-        android:textColor="#5C6BC0"
+        android:textColor="@color/white"
         android:textSize="18sp"
         android:textStyle="bold" />
 

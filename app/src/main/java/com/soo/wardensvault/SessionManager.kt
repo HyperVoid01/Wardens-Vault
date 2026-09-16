@@ -5,7 +5,7 @@ import android.content.Context
 /*
 SessionManager
 Persists which user is currently logged in using SharedPreferences,
-so any Activity/ViewModel can find out "who is logged in" without
+so any Activity/ViewModel can find out who is logged in without
 needing it passed through every Intent.
  */
 object SessionManager {

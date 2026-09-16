@@ -6,7 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 class CategoryViewModel(application: Application) : AndroidViewModel(application) {
     private val categoryDao = AppDatabase.getDatabase(application).categoryDao()
 
-    //suspend, not fire-and-forget, so callers can await completion before refreshing a list
+    //suspend so callers await completion before refreshing a list
     suspend fun createCategory(userId: Int, name: String) {
         categoryDao.insertCategory(Category(userId = userId, name = name))
     }

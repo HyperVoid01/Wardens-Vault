@@ -18,9 +18,11 @@
         android:textStyle="bold" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="350dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="10dp"
         android:orientation="horizontal">
 
         <Button
@@ -47,6 +49,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:layout_marginLeft="10dp"
         android:textColor="#FFFFFF"
         tools:text="1 Sep 2026 - 30 Sep 2026" />
 
@@ -54,19 +57,21 @@
         android:id="@+id/btnLoad"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
         android:layout_marginTop="8dp"
         android:backgroundTint="#3F51B5"
         android:text="Load" />
 
     <TextView
-        android:id="@+id/tvGrandTotal"
-        android:layout_width="wrap_content"
+        android:id="@+id/tvTotalTitles"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="left"
         android:layout_marginTop="12dp"
         android:textColor="#FFC107"
         android:textSize="16sp"
         android:textStyle="bold"
-        tools:text="Grand Total: $128.40" />
+        tools:text="Categories" />
 
     <ListView
         android:id="@+id/lvCategoryTotals"
@@ -75,5 +80,16 @@
         android:layout_marginTop="8dp"
         android:layout_weight="1"
         android:divider="@null" />
+
+    <TextView
+        android:id="@+id/tvGrandTotal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="12dp"
+        android:textColor="#FFC107"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        tools:text="Grand Total: $128.40" />
 
 </LinearLayout>

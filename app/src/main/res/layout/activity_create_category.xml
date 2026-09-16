@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/ic_wall"
     android:orientation="vertical"
-    android:padding="24dp"
+    android:padding="35dp"
     tools:context=".CreateCategoryActivity">
 
     <TextView

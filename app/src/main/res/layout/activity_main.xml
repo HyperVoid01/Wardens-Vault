@@ -22,7 +22,7 @@
         android:text="Warden's Vault"
         android:textAlignment="center"
         android:textColor="#2196F3"
-        android:textSize="34sp"
+        android:textSize="48sp"
         android:textStyle="bold" />
 
     <LinearLayout
@@ -30,6 +30,10 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical">
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="48dp" />
 
         <ImageView
             android:id="@+id/imageView"
@@ -40,26 +44,28 @@
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="94dp" />
+            android:layout_height="159dp" />
 
         <Button
             android:id="@+id/btnRegister"
-            android:layout_width="match_parent"
+            android:layout_width="293dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_margin="10dp"
             android:backgroundTint="#3F51B5"
-            android:text="Register" />
+            android:text="Register"
+            android:textSize="20sp" />
 
         <Button
             android:id="@+id/btnLogin"
-            android:layout_width="match_parent"
+            android:layout_width="295dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_margin="10dp"
             android:layout_marginTop="16dp"
             android:backgroundTint="#3F51B5"
-            android:text="Login" />
+            android:text="Login"
+            android:textSize="20sp" />
 
         <Space
             android:layout_width="match_parent"

@@ -38,9 +38,6 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "user_db"
                 )
-                    //version bumped 1 -> 2 for the new tables; destructive migration
-                    //is fine while the schema is still being actively built.
-                    //Switch to a real Migration() once you have real user data to keep.
                     .fallbackToDestructiveMigration(true)
                     .build().also { INSTANCE = it }
             }
