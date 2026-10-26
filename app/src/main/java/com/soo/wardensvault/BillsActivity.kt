@@ -55,8 +55,8 @@ class BillsActivity : ScreenActivity() {
                 }
             }
             info.addView(UiKit.text(this, enemy.displayName, Color.WHITE, 18f, true))
-            //enemy health: full while the bill is unpaid, empty once it's defeated
-            info.addView(healthBar(if (bill.isPaid) 0 else FULL_HEALTH))
+            //enemy health = how much of the bill is still owed (partial payments wound it)
+            info.addView(healthBar(healthLevel(BillManager.health(bill))))
             info.addView(
                 UiKit.text(
                     this,
@@ -69,6 +69,8 @@ class BillsActivity : ScreenActivity() {
             val days = DateUtils.daysBetween(today, bill.dueDate)
             val (statusText, statusColor) = when {
                 bill.isPaid -> Pair("DEFEATED - returns next cycle", UiKit.GREEN)
+                bill.paidThisCycle > 0.0 && days >= 0 ->
+                    Pair("WOUNDED - ${money(BillManager.remaining(bill))} left, due in $days day(s)", UiKit.ORANGE)
                 days < 0 -> Pair("OVERDUE by ${-days} day(s)", UiKit.RED)
                 days == 0 -> Pair("DUE TODAY", UiKit.ORANGE)
                 else -> Pair("Alive - due in $days day(s)", UiKit.ORANGE)
@@ -81,7 +83,7 @@ class BillsActivity : ScreenActivity() {
 
             val buttons = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
             if (!bill.isPaid) {
-                buttons.addView(smallButton("Defeat (Pay)") { showPayForm(bill, enemy) })
+                buttons.addView(smallButton("Attack (Pay)") { showPayForm(bill, enemy) })
             }
             buttons.addView(smallButton("Edit") { showBillForm(bill) })
             buttons.addView(smallButton("Delete") {
@@ -122,6 +124,9 @@ class BillsActivity : ScreenActivity() {
         return frame
     }
 
+    //0..1 health -> ClipDrawable level
+    private fun healthLevel(health: Double): Int = (health * FULL_HEALTH).toInt().coerceIn(0, FULL_HEALTH)
+
     private fun smallButton(label: String, onClick: () -> Unit): Button {
         return UiKit.button(this, label, onClick).apply {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
@@ -159,16 +164,18 @@ class BillsActivity : ScreenActivity() {
                 if (existing == null) {
                     db.billDao().insert(
                         Bill(
-                            userId = userId, name = name, amount = amount!!, dueDate = due!!,
-                            frequency = v["frequency"] ?: "Monthly", categoryId = category!!.id, isPaid = false
+                            userId = userId, name = name, amount = amount, dueDate = due,
+                            frequency = v["frequency"] ?: "Monthly", categoryId = category.id, isPaid = false
                         )
                     )
                 } else {
                     db.billDao().update(
                         existing.copy(
-                            name = name, amount = amount!!, dueDate = due!!,
-                            frequency = v["frequency"] ?: "Monthly", categoryId = category!!.id,
-                            isPaid = if (due == existing.dueDate) existing.isPaid else false
+                            name = name, amount = amount, dueDate = due,
+                            frequency = v["frequency"] ?: "Monthly", categoryId = category.id,
+                            //a new due date starts a fresh cycle
+                            isPaid = if (due == existing.dueDate) existing.isPaid else false,
+                            paidThisCycle = if (due == existing.dueDate) existing.paidThisCycle else 0.0
                         )
                     )
                 }
@@ -178,8 +185,14 @@ class BillsActivity : ScreenActivity() {
     }
 
     private fun showPayForm(bill: Bill, enemy: Enemy) {
-        val fields = listOf(FormField("amount", "Amount paid", FormField.Kind.NUMBER, bill.amount.toString()))
-        showForm("Defeat ${enemy.displayName}", fields, "Pay & Attack") { v ->
+        val owed = BillManager.remaining(bill)
+        val fields = listOf(
+            FormField(
+                "amount", "Amount paid (R) - ${money(owed)} defeats it",
+                FormField.Kind.NUMBER, String.format(java.util.Locale.US, "%.2f", owed)
+            )
+        )
+        showForm("Attack ${enemy.displayName}", fields, "Pay & Attack") { v ->
             val amount = parseAmount(v["amount"])
             if (amount == null || amount <= 0.0) return@showForm "Enter a valid amount greater than 0"
             val result = BillManager.payBill(this@BillsActivity, userId, bill, amount)
@@ -190,7 +203,11 @@ class BillsActivity : ScreenActivity() {
         }
     }
 
-    //enemy shakes, spins and fades away, then the rewards are shown
+    /*
+    Battle: the health bar drops by the amount paid while the enemy shakes.
+    Paid in full -> it spins and fades away and the rewards are shown.
+    Paid less    -> it survives, wounded, and the dialog says how much is left.
+     */
     private fun showDefeatDialog(enemy: Enemy, result: BillManager.PayResult, achievements: List<AchievementDef>) {
         val image = ImageView(this).apply {
             setImageDrawable(UiKit.crisp(this@BillsActivity, enemy.drawableRes))
@@ -201,7 +218,7 @@ class BillsActivity : ScreenActivity() {
             textSize = 16f
             text = "Attacking ${enemy.displayName}..."
         }
-        val hp = healthBar(FULL_HEALTH, 22)
+        val hp = healthBar(healthLevel(result.healthBefore), 22)
         val box = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
@@ -214,19 +231,25 @@ class BillsActivity : ScreenActivity() {
         val dialog = AlertDialog.Builder(this)
             .setTitle("Battle!")
             .setView(box)
-            .setPositiveButton("Victory!", null)
+            .setPositiveButton(if (result.defeated) "Victory!" else "Continue", null)
             .create()
         dialog.show()
 
         val award = result.award
-        val sb = StringBuilder("${enemy.displayName} defeated!\n+${award.xpGained} XP  +${award.goldGained} Gold")
-        if (result.early) sb.append("\n(early payment bonus included)")
-        if (award.leveledUp) sb.append("\nLEVEL UP! You are now level ${award.newLevel}")
+        val sb = StringBuilder()
+        if (result.defeated && award != null) {
+            sb.append("${enemy.displayName} defeated!\n+${award.xpGained} XP  +${award.goldGained} Gold")
+            if (result.early) sb.append("\n(early payment bonus included)")
+            if (award.leveledUp) sb.append("\nLEVEL UP! You are now level ${award.newLevel}")
+        } else {
+            sb.append("A solid hit, but ${enemy.displayName} is still standing!\n")
+            sb.append("Pay the remaining ${money(result.stillOwed)} to defeat it.")
+        }
         for (a in achievements) sb.append("\nAchievement: ${a.name}")
 
         //the enemy's health drains while it shakes
         val clip = (hp.tag as ImageView).drawable
-        ValueAnimator.ofInt(FULL_HEALTH, 0).apply {
+        ValueAnimator.ofInt(healthLevel(result.healthBefore), healthLevel(result.healthAfter)).apply {
             duration = 900
             addUpdateListener { clip.level = it.animatedValue as Int }
             start()
@@ -236,9 +259,13 @@ class BillsActivity : ScreenActivity() {
         shake.duration = 600
         shake.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
-                image.animate().alpha(0f).scaleX(0.2f).scaleY(0.2f).rotation(180f).setDuration(700)
-                    .withEndAction { message.text = sb.toString() }
-                    .start()
+                if (result.defeated) {
+                    image.animate().alpha(0f).scaleX(0.2f).scaleY(0.2f).rotation(180f).setDuration(700)
+                        .withEndAction { message.text = sb.toString() }
+                        .start()
+                } else {
+                    message.text = sb.toString()   //the enemy survives
+                }
             }
         })
         shake.start()

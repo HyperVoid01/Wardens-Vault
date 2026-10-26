@@ -116,6 +116,13 @@
         <item name="cornerRadius">6dp</item>
     </style>
 
+    <!-- Labels under the bottom navigation icons -->
+    <style name="NavLabel" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+
     <!-- Bottom navigation bar (screens in XML) -->
     <style name="BottomNavBar">
         <item name="android:layout_width">match_parent</item>

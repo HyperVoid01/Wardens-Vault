@@ -42,9 +42,13 @@ object Forecaster {
         for (bill in db.billDao().getAll(userId)) {
             var due = bill.dueDate
             var skipFirst = bill.isPaid   // this cycle is already paid
+            var first = true
             while (due <= end) {
-                if (due >= today && !skipFirst) billsDue += bill.amount
+                //the current cycle only counts what is still owed after partial payments
+                val owed = if (first) BillManager.remaining(bill) else bill.amount
+                if (due >= today && !skipFirst) billsDue += owed
                 skipFirst = false
+                first = false
                 due = DateUtils.addFrequency(due, bill.frequency)
             }
         }

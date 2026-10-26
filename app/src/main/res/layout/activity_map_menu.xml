@@ -56,7 +56,7 @@
                 <ImageView
                     style="@style/MenuRowIcon"
                     android:contentDescription="Castle"
-                    android:src="@drawable/ic_menu_castle" />
+                    android:src="@drawable/menu_icon_castle" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -87,7 +87,7 @@
                 <ImageView
                     style="@style/MenuRowIcon"
                     android:contentDescription="Market"
-                    android:src="@drawable/ic_menu_market" />
+                    android:src="@drawable/menu_icon_market" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -119,7 +119,7 @@
                 <ImageView
                     style="@style/MenuRowIcon"
                     android:contentDescription="Armory"
-                    android:src="@drawable/ic_menu_armory" />
+                    android:src="@drawable/menu_icon_armory" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -146,7 +146,7 @@
             <LinearLayout
                 android:id="@+id/rowDungeon"
                 style="@style/MenuRow">
-                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_dungeon" android:contentDescription="Dungeon" />
+                <ImageView style="@style/MenuRowIcon" android:src="@drawable/menu_icon_dungeon" android:contentDescription="Dungeon" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -173,7 +173,7 @@
             <LinearLayout
                 android:id="@+id/rowTreasury"
                 style="@style/MenuRow">
-                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_treasury" android:contentDescription="Treasury" />
+                <ImageView style="@style/MenuRowIcon" android:src="@drawable/menu_icon_treasury" android:contentDescription="Treasury" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -201,7 +201,7 @@
             <LinearLayout
                 android:id="@+id/rowReports"
                 style="@style/MenuRow">
-                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_reports" android:contentDescription="Reports" />
+                <ImageView style="@style/MenuRowIcon" android:src="@drawable/menu_icon_reports" android:contentDescription="Reports" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -228,7 +228,7 @@
             <LinearLayout
                 android:id="@+id/rowProfile"
                 style="@style/MenuRow">
-                <ImageView style="@style/MenuRowIcon" android:src="@drawable/ic_menu_profile" android:contentDescription="Profile" />
+                <ImageView style="@style/MenuRowIcon" android:src="@drawable/menu_icon_profile" android:contentDescription="Profile" />
 
                 <TextView
                     style="@style/MenuRowLabel"

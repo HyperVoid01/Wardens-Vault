@@ -90,15 +90,15 @@ object AlertEngine {
             when {
                 days < 0 -> alerts.add(
                     Alert("bill_overdue_${bill.id}_${bill.dueDate}", AppSettings.KEY_BILLS,
-                        "Bill overdue", "$enemy is overdue (R${fmt(bill.amount)}).", 2)
+                        "Bill overdue", "$enemy is overdue (R${fmt(BillManager.remaining(bill))}).", 2)
                 )
                 days == 0 -> alerts.add(
                     Alert("bill_today_${bill.id}_${bill.dueDate}", AppSettings.KEY_BILLS,
-                        "Bill due today", "$enemy is due today (R${fmt(bill.amount)}).", 2)
+                        "Bill due today", "$enemy is due today (R${fmt(BillManager.remaining(bill))}).", 2)
                 )
                 days <= 3 -> alerts.add(
                     Alert("bill_soon_${bill.id}_${bill.dueDate}", AppSettings.KEY_BILLS,
-                        "Upcoming bill", "$enemy is due in $days day(s) (R${fmt(bill.amount)}).", 1)
+                        "Upcoming bill", "$enemy is due in $days day(s) (R${fmt(BillManager.remaining(bill))}).", 1)
                 )
             }
         }

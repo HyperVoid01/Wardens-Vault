@@ -37,6 +37,22 @@ class MapMenuActivity : AppCompatActivity() {
             return
         }
 
+        //draw the pixel-art icons sharp instead of blurred
+        val icons = mapOf(
+            R.id.rowBedroom to R.drawable.nav_home,
+            R.id.rowCastle to R.drawable.menu_icon_castle,
+            R.id.rowMarket to R.drawable.menu_icon_market,
+            R.id.rowArmory to R.drawable.menu_icon_armory,
+            R.id.rowDungeon to R.drawable.menu_icon_dungeon,
+            R.id.rowTreasury to R.drawable.menu_icon_treasury,
+            R.id.rowReports to R.drawable.menu_icon_reports,
+            R.id.rowProfile to R.drawable.menu_icon_profile
+        )
+        for ((rowId, iconRes) in icons) {
+            val row = findViewById<android.view.ViewGroup>(rowId)
+            (row.getChildAt(0) as? android.widget.ImageView)?.setImageDrawable(UiKit.crisp(this, iconRes))
+        }
+
         findViewById<android.view.View>(R.id.rowBedroom).setOnClickListener {
             startActivity(Intent(this, BedroomActivity::class.java))
         }

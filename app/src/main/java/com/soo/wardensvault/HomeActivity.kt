@@ -71,7 +71,20 @@ class HomeActivity : AppCompatActivity() {
             hour < 18 -> "Good Afternoon"
             else -> "Good Evening"
         }
-        findViewById<TextView>(R.id.tvWelcome).text = "$greeting,\n$fullName"
+        findViewById<TextView>(R.id.tvGreeting).text = "$greeting,"
+        findViewById<TextView>(R.id.tvWelcome).text = fullName ?: "Warden"
+
+        //pixel-art icons on the Gold and streak tiles
+        findViewById<ImageView>(R.id.ivGoldIcon).setImageDrawable(UiKit.crisp(this, R.drawable.menu_icon_treasury))
+        findViewById<ImageView>(R.id.ivStreakIcon).setImageDrawable(UiKit.crisp(this, R.drawable.deco_torch))
+
+        //quick actions for the two things people do most
+        findViewById<android.widget.Button>(R.id.btnQuickExpense).setOnClickListener {
+            startActivity(Intent(this, CreateExpenseActivity::class.java))
+        }
+        findViewById<android.widget.Button>(R.id.btnQuickBills).setOnClickListener {
+            startActivity(Intent(this, BillsActivity::class.java))
+        }
 
         BottomNav.attach(this, findViewById(R.id.bottomNavigationView), BottomNav.Tab.HOME)
 
@@ -141,20 +154,25 @@ class HomeActivity : AppCompatActivity() {
             .show()
     }
 
-    //shows level, XP bar, Gold and login streak
+    //the Warden in their gear, level, XP bar, Gold and login streak
     private suspend fun loadPlayerStats() {
         val stats = gamification.getStats(userId)
         val level = GamificationManager.levelForXp(stats.xp)
         val (intoLevel, levelSize) = GamificationManager.levelProgress(stats.xp)
+        val equipped = db.ownedItemDao().getAll(userId)
+            .filter { it.equipped }
+            .mapNotNull { CosmeticCatalog.byKey(it.itemKey) }
+        val title = equipped.firstOrNull { it.slot == Slot.TITLE }?.name
+            ?: GamificationManager.titleForLevel(level)
 
-        findViewById<TextView>(R.id.tvLevel).text =
-            "Level $level - ${GamificationManager.titleForLevel(level)}"
+        findViewById<WardenView>(R.id.homeWarden).show(equipped)
+        findViewById<TextView>(R.id.tvLevel).text = "Level $level - $title"
         findViewById<ProgressBar>(R.id.pbXp).progress =
             ((intoLevel * 100) / levelSize).coerceIn(0, 100)
-        findViewById<TextView>(R.id.tvXp).text = "XP $intoLevel / $levelSize"
-        findViewById<TextView>(R.id.tvGold).text = "Gold: ${stats.gold}"
+        findViewById<TextView>(R.id.tvXp).text = "$intoLevel / $levelSize XP to level ${level + 1}"
+        findViewById<TextView>(R.id.tvGold).text = "${stats.gold} Gold"
         findViewById<TextView>(R.id.tvStreak).text =
-            "Login streak: ${stats.loginStreak} ${if (stats.loginStreak == 1) "day" else "days"}"
+            if (stats.loginStreak == 1) "1-day streak" else "${stats.loginStreak}-day streak"
     }
 
     //monthly budget: total, spent, remaining and percentage used
@@ -171,14 +189,16 @@ class HomeActivity : AppCompatActivity() {
             val percent = (spent / goal.maxGoal) * 100
             progressBar.progress = percent.toInt().coerceIn(0, 100)
             val remaining = goal.maxGoal - spent
+            val used = String.format(Locale.getDefault(), "%.0f", percent)
             tvBudgetLeft.text =
-                "Budget ${UiKit.money(goal.maxGoal)}   Spent ${UiKit.money(spent)}\n" +
-                    (if (remaining >= 0) "Remaining ${UiKit.money(remaining)}"
-                    else "Over budget by ${UiKit.money(-remaining)}") +
-                    "   (${String.format(Locale.getDefault(), "%.0f", percent)}% used)"
+                (if (remaining >= 0) "${UiKit.money(remaining)} left of ${UiKit.money(goal.maxGoal)}"
+                else "Over budget by ${UiKit.money(-remaining)}") +
+                    "\nSpent ${UiKit.money(spent)} ($used% used)"
+            tvBudgetLeft.setTextColor(if (remaining < 0) UiKit.RED else Color.WHITE)
         } else {
             progressBar.progress = 0
-            tvBudgetLeft.text = "Spent ${UiKit.money(spent)} - set a monthly budget under Castle"
+            tvBudgetLeft.text = "Spent ${UiKit.money(spent)} so far.\nSet a monthly budget under Map > Castle."
+            tvBudgetLeft.setTextColor(Color.WHITE)
         }
     }
 
@@ -222,13 +242,34 @@ class HomeActivity : AppCompatActivity() {
         return board
     }
 
-    //category progress, alerts, upcoming bills, savings, net worth and forecast
+    //section title with a small pixel-art icon, used for every dashboard section
+    private fun sectionHeader(title: String, iconRes: Int): LinearLayout {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = UiKit.dp(this@HomeActivity, 22) }
+        }
+        val size = UiKit.dp(this, 28)
+        row.addView(ImageView(this).apply {
+            setImageDrawable(UiKit.crisp(this@HomeActivity, iconRes))
+        }, LinearLayout.LayoutParams(size, size))
+        row.addView(UiKit.text(this, title, UiKit.GOLD, 18f, true).apply {
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginStart = UiKit.dp(this@HomeActivity, 10)
+            }
+        })
+        return row
+    }
+
+    //notice board, category progress, upcoming bills, savings and outlook
     private suspend fun buildDashboard(alerts: List<Alert>) {
         val container = findViewById<LinearLayout>(R.id.llDashboard)
         container.removeAllViews()
 
         //alerts, pinned to the Notice Board
-        container.addView(UiKit.text(this, "Notice Board", UiKit.GOLD, 18f, true))
+        container.addView(sectionHeader("Notice Board", R.drawable.menu_icon_castle))
         container.addView(noticeBoard(alerts))
 
         //category progress
@@ -237,7 +278,7 @@ class HomeActivity : AppCompatActivity() {
             userId, DateUtils.startOfMonth(now), DateUtils.endOfToday()
         )
         val limits = db.categoryLimitDao().getAll(userId).associateBy { it.categoryId }
-        container.addView(UiKit.text(this, "Category progress", UiKit.GOLD, 18f, true))
+        container.addView(sectionHeader("Category Limits", R.drawable.menu_icon_market))
         val categoryCard = UiKit.card(this)
         var anyLimit = false
         for (total in totals) {
@@ -258,13 +299,13 @@ class HomeActivity : AppCompatActivity() {
         }
         if (!anyLimit) {
             categoryCard.addView(
-                UiKit.text(this, "No category limits yet. Set them under Castle > Category Spending Limits.", UiKit.MUTED, 13f)
+                UiKit.text(this, "No category limits yet. Set them under Map > Castle > Category Spending Limits.", UiKit.MUTED, 13f)
             )
         }
         container.addView(categoryCard)
 
-        //upcoming bills
-        container.addView(UiKit.text(this, "Upcoming bills", UiKit.GOLD, 18f, true))
+        //upcoming bills, each with its enemy
+        container.addView(sectionHeader("Upcoming Bills", R.drawable.menu_icon_dungeon))
         val billCard = UiKit.card(this)
         val today = DateUtils.startOfToday()
         val upcoming = db.billDao().getAll(userId).filter { !it.isPaid }.take(3)
@@ -272,28 +313,41 @@ class HomeActivity : AppCompatActivity() {
             billCard.addView(UiKit.text(this, "No unpaid bills - the dungeon is quiet.", UiKit.MUTED, 13f))
         }
         for (bill in upcoming) {
+            val enemy = EnemyCatalog.forBill(bill.name)
             val days = DateUtils.daysBetween(today, bill.dueDate)
             val whenText = when {
                 days < 0 -> "OVERDUE"
-                days == 0 -> "due today"
-                else -> "due ${dateFormat.format(bill.dueDate)} (in $days days)"
+                days == 0 -> "Due today"
+                else -> "Due ${dateFormat.format(bill.dueDate)} (in $days days)"
             }
-            billCard.addView(
-                UiKit.text(
-                    this,
-                    "${EnemyCatalog.forBill(bill.name).displayName} - ${UiKit.money(bill.amount)} - $whenText",
-                    if (days <= 0) UiKit.RED else Color.WHITE, 14f
-                )
-            )
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = android.view.Gravity.CENTER_VERTICAL
+                setPadding(0, UiKit.dp(this@HomeActivity, 4), 0, UiKit.dp(this@HomeActivity, 4))
+            }
+            val iconSize = UiKit.dp(this, 40)
+            row.addView(ImageView(this).apply {
+                setImageDrawable(UiKit.crisp(this@HomeActivity, enemy.drawableRes))
+            }, LinearLayout.LayoutParams(iconSize, iconSize))
+            val texts = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    marginStart = UiKit.dp(this@HomeActivity, 10)
+                }
+            }
+            texts.addView(UiKit.text(this, "${enemy.displayName} - ${UiKit.money(BillManager.remaining(bill))}", Color.WHITE, 14f, true))
+            texts.addView(UiKit.text(this, whenText, if (days <= 0) UiKit.RED else UiKit.MUTED, 12f, days <= 0))
+            row.addView(texts)
+            billCard.addView(row)
         }
         container.addView(billCard)
 
         //savings progress
-        container.addView(UiKit.text(this, "Savings progress", UiKit.GOLD, 18f, true))
+        container.addView(sectionHeader("Savings Goals", R.drawable.menu_icon_treasury))
         val goalCard = UiKit.card(this)
         val goals = db.savingsGoalDao().getAll(userId).filter { !it.completed }.take(3)
         if (goals.isEmpty()) {
-            goalCard.addView(UiKit.text(this, "No active savings goals. Add one under Castle.", UiKit.MUTED, 13f))
+            goalCard.addView(UiKit.text(this, "No active savings goals. Add one under Map > Castle.", UiKit.MUTED, 13f))
         }
         for (goal in goals) {
             val percent = if (goal.targetAmount > 0) (goal.currentAmount / goal.targetAmount * 100).toInt() else 0
@@ -306,7 +360,7 @@ class HomeActivity : AppCompatActivity() {
         container.addView(goalCard)
 
         //net worth + forecast
-        container.addView(UiKit.text(this, "Outlook", UiKit.GOLD, 18f, true))
+        container.addView(sectionHeader("Outlook", R.drawable.menu_icon_reports))
         val outlook = UiKit.card(this)
         val netWorth = NetWorthManager.totals(db.netWorthDao().getItems(userId)).netWorth
         outlook.addView(

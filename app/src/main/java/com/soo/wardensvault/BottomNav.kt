@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 
@@ -41,9 +42,17 @@ object BottomNav {
     fun attach(activity: AppCompatActivity, nav: BottomNavigationView, current: Tab?) {
         nav.setBackgroundColor(BAR_COLOR)
         nav.itemIconTintList = null
-        nav.itemIconSize = UiKit.dp(activity, 34)
+        //bigger buttons: larger icons and labels on a taller bar
+        nav.itemIconSize = UiKit.dp(activity, 44)
         nav.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_LABELED
         nav.itemTextColor = ColorStateList.valueOf(Color.WHITE)
+        nav.setItemTextAppearanceActive(R.style.NavLabel)
+        nav.setItemTextAppearanceInactive(R.style.NavLabel)
+        nav.itemPaddingTop = UiKit.dp(activity, 8)
+        nav.itemPaddingBottom = UiKit.dp(activity, 8)
+        nav.layoutParams = nav.layoutParams.apply { height = UiKit.dp(activity, 96) }
+        //the screen already leaves room for the phone's own navigation bar, so don't add it twice
+        ViewCompat.setOnApplyWindowInsetsListener(nav) { _, insets -> insets }
         nav.selectedItemId = (current ?: Tab.MAP).itemId
 
         //returning false keeps this screen's tab highlighted when the user comes back

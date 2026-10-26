@@ -25,8 +25,8 @@ class ArmoryActivity : ScreenActivity() {
         addText("Level $level   -   Gold: ${stats.gold}", UiKit.GOLD, 18f, true)
         addText("Cosmetics are only for show and never change your finances.", UiKit.MUTED, 12f)
 
-        //the shop front, with the Warden as they look now
-        content.addView(shopFront(equipped, stats.gold))
+        //the Warden as they look now
+        content.addView(showcase(equipped))
         addButton("View your Bedroom") { goTo(BedroomActivity::class.java) }
 
         //everything the user owns, in the inventory grid
@@ -83,30 +83,25 @@ class ArmoryActivity : ScreenActivity() {
         }
     }
 
-    //Shop.png with the knight standing in the shop and the Gold total on the counter
-    private fun shopFront(equipped: List<Cosmetic>, gold: Int): SceneLayout {
-        val scene = SceneLayout(this, SHOP_HEIGHT / SHOP_WIDTH)
+    //the knight standing in a pit of gold (CoinBack.png), wearing what is equipped now
+    private fun showcase(equipped: List<Cosmetic>): SceneLayout {
+        val scene = SceneLayout(this, SHOWCASE_HEIGHT / SHOWCASE_WIDTH)
         scene.layoutParams = LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         ).apply { topMargin = UiKit.dp(this@ArmoryActivity, 12) }
         UiKit.roundCorners(scene, UiKit.dp(this, 12).toFloat())
 
-        val shop = ImageView(this).apply {
-            setImageDrawable(UiKit.crisp(this@ArmoryActivity, R.drawable.scene_shop))
+        val backdrop = ImageView(this).apply {
+            setImageDrawable(UiKit.crisp(this@ArmoryActivity, R.drawable.scene_forge))
             scaleType = ImageView.ScaleType.FIT_XY
         }
-        scene.add(shop, 0f, 0f, 1f, 1f)
+        scene.add(backdrop, 0f, 0f, 1f, 1f)
 
         val warden = WardenView(this)
         warden.show(equipped)
-        val knightWidth = 0.6f
+        val knightWidth = 0.55f
         val knightHeight = scene.heightFor(knightWidth, 320, 320)
-        scene.add(warden, 0.5f - knightWidth / 2, 0.84f - knightHeight, knightWidth, knightHeight)
-
-        val goldText = UiKit.text(this, "Gold: $gold", UiKit.GOLD, 18f, true).apply {
-            gravity = Gravity.CENTER
-        }
-        scene.add(goldText, 0.1f, 0.9f, 0.8f, 0.08f)
+        scene.add(warden, 0.5f - knightWidth / 2, 0.96f - knightHeight, knightWidth, knightHeight)
         return scene
     }
 
@@ -218,8 +213,8 @@ class ArmoryActivity : ScreenActivity() {
     }
 
     companion object {
-        private const val SHOP_WIDTH = 1080f
-        private const val SHOP_HEIGHT = 1480f
+        private const val SHOWCASE_WIDTH = 1080f
+        private const val SHOWCASE_HEIGHT = 840f
 
         //inventory picture size and the inside of each grid slot (pixels in Base.png)
         private const val GRID_WIDTH = 1080f

@@ -37,7 +37,9 @@ data class Bill(
     val categoryId: String = "",
     //Firestore would otherwise save a Kotlin "isX" Boolean as "x" and fail to read it back
     @get:PropertyName("isPaid") @field:PropertyName("isPaid")
-    val isPaid: Boolean = false
+    val isPaid: Boolean = false,
+    //how much has been paid towards the current cycle - smaller payments only wound the enemy
+    val paidThisCycle: Double = 0.0
 )
 
 //History of every bill payment ("enemy defeated")
