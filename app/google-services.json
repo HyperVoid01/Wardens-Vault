@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1070035302963",
+    "project_id": "wardens-vault",
+    "storage_bucket": "wardens-vault.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1070035302963:android:d754bb45be18d6b32f0146",
+        "android_client_info": {
+          "package_name": "com.soo.wardensvault"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkzPYKi9WbRT6vtf4OeKRKfy2hZgZycAI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
