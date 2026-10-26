@@ -9,14 +9,14 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 /*
-Map menu - the themed hub screen. Each row maps to one of the app's real features:
-  Castle   -> Home dashboard
-  Dungeon  -> log a new expense
-  Treasury -> category totals
-  Market   -> budget goal
-  Reports  -> expense history list
-  Armory   -> manage categories
-  Profile  -> account / logout
+Map menu - the themed hub screen:
+  Castle   -> Budgets & Goals
+  Dungeon  -> Bills (enemies)
+  Treasury -> Income & Net Worth
+  Market   -> Expenses
+  Reports  -> Analytics
+  Armory   -> Customisation
+  Profile  -> account / settings / logout
  */
 class MapMenuActivity : AppCompatActivity() {
 
@@ -36,23 +36,15 @@ class MapMenuActivity : AppCompatActivity() {
             return
         }
 
-        findViewById<android.view.View>(R.id.rowCastle).setOnClickListener {
-            startActivity(Intent(this, HomeActivity::class.java))
-        }
+        findViewById<android.view.View>(R.id.rowCastle).setOnClickListener { openHub("castle") }
         findViewById<android.view.View>(R.id.rowDungeon).setOnClickListener {
-            startActivity(Intent(this, CreateExpenseActivity::class.java))
+            startActivity(Intent(this, BillsActivity::class.java))
         }
-        findViewById<android.view.View>(R.id.rowTreasury).setOnClickListener {
-            startActivity(Intent(this, CategoryTotalsActivity::class.java))
-        }
-        findViewById<android.view.View>(R.id.rowMarket).setOnClickListener {
-            startActivity(Intent(this, BudgetGoalActivity::class.java))
-        }
-        findViewById<android.view.View>(R.id.rowReports).setOnClickListener {
-            startActivity(Intent(this, ExpenseListActivity::class.java))
-        }
+        findViewById<android.view.View>(R.id.rowTreasury).setOnClickListener { openHub("treasury") }
+        findViewById<android.view.View>(R.id.rowMarket).setOnClickListener { openHub("market") }
+        findViewById<android.view.View>(R.id.rowReports).setOnClickListener { openHub("reports") }
         findViewById<android.view.View>(R.id.rowArmory).setOnClickListener {
-            startActivity(Intent(this, CreateCategoryActivity::class.java))
+            startActivity(Intent(this, ArmoryActivity::class.java))
         }
         findViewById<android.view.View>(R.id.rowProfile).setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
@@ -72,5 +64,11 @@ class MapMenuActivity : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+
+    private fun openHub(hub: String) {
+        val intent = Intent(this, HubActivity::class.java)
+        intent.putExtra("hub", hub)
+        startActivity(intent)
     }
 }

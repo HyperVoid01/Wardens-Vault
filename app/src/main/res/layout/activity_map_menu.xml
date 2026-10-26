@@ -45,7 +45,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Home"
+                        android:text="Budgets &amp; Goals"
                         android:textSize="14sp" />
                 </LinearLayout>
 
@@ -76,7 +76,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Budget Goal"
+                        android:text="Expenses"
                         android:textSize="14sp" />
 
                 </LinearLayout>
@@ -108,7 +108,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Add Category"
+                        android:text="Customisation"
                         android:textSize="14sp" />
                 </LinearLayout>
 
@@ -135,7 +135,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Add Expenses"
+                        android:text="Bills"
                         android:textSize="14sp" />
                 </LinearLayout>
 
@@ -162,7 +162,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Category Totals"
+                        android:text="Income &amp; Net Worth"
                         android:textSize="14sp" />
 
                 </LinearLayout>
@@ -190,7 +190,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Expense History"
+                        android:text="Analytics"
                         android:textSize="14sp" />
                 </LinearLayout>
 

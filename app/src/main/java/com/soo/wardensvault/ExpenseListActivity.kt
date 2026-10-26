@@ -8,10 +8,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.ListView
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -31,7 +34,11 @@ class ExpenseListActivity : AppCompatActivity() {
     private lateinit var lvExpenses: ListView
     private lateinit var tvPeriod: TextView
     private lateinit var tvTotal: TextView
+    private lateinit var spFilterCategory: Spinner
     private var userId: Int = -1
+
+    //null = show every category
+    private var filterCategory: String? = null
 
     //defaults to the current calendar month until the user picks their own range
     private var fromMillis: Long = DateUtils.startOfCurrentMonth()
@@ -62,6 +69,9 @@ class ExpenseListActivity : AppCompatActivity() {
         lvExpenses = findViewById(R.id.lvExpenses)
         tvPeriod = findViewById(R.id.tvPeriod)
         tvTotal = findViewById(R.id.tvTotal)
+
+        spFilterCategory = findViewById(R.id.spFilterCategory)
+        setupCategoryFilter()
 
         updatePeriodLabel()
 
@@ -112,11 +122,50 @@ class ExpenseListActivity : AppCompatActivity() {
             return
         }
         lifecycleScope.launch {
-            val expenses = viewModel.getExpensesWithCategoryForPeriod(userId, fromMillis, toMillis)
-            val total = viewModel.getTotalSpentForPeriod(userId, fromMillis, toMillis)
+            val all = viewModel.getExpensesWithCategoryForPeriod(userId, fromMillis, toMillis)
+            val category = filterCategory
+            val expenses = if (category == null) all else all.filter { it.categoryName == category }
+            val total = expenses.sumOf { it.amount }
             tvTotal.text = "Total: R${String.format(Locale.getDefault(), "%.2f", total)}"
             lvExpenses.adapter = ExpenseListAdapter(expenses)
         }
+    }
+
+    //spinner of "All categories" + the user's categories; changing it reloads the list
+    private fun setupCategoryFilter() {
+        lifecycleScope.launch {
+            val categories = AppDatabase.getDatabase(this@ExpenseListActivity)
+                .categoryDao().getCategoriesForUser(userId)
+            val options = listOf("All categories") + categories.map { it.name }
+            spFilterCategory.adapter = ArrayAdapter(
+                this@ExpenseListActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                options
+            )
+            spFilterCategory.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    filterCategory = if (position == 0) null else options[position]
+                    loadExpenses()
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
+        }
+    }
+
+    //deleting an expense always asks first
+    private fun confirmDelete(item: ExpenseWithCategory) {
+        AlertDialog.Builder(this)
+            .setTitle("Delete expense")
+            .setMessage("Delete \"${item.description}\" (R${String.format(Locale.getDefault(), "%.2f", item.amount)})?")
+            .setPositiveButton("Delete") { _, _ ->
+                lifecycleScope.launch {
+                    AppDatabase.getDatabase(this@ExpenseListActivity).expenseDao().deleteExpense(userId, item.id)
+                    loadExpenses()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun showPhotoDialog(photoPath: String) {
@@ -154,7 +203,8 @@ class ExpenseListActivity : AppCompatActivity() {
             view.findViewById<TextView>(R.id.tvDescription).text = item.description
             view.findViewById<TextView>(R.id.tvDateTime).text =
                 "${dateFormat.format(item.date)}, ${timeFormat.format(item.startTime)} - " +
-                timeFormat.format(item.endTime)
+                timeFormat.format(item.endTime) +
+                (if (item.photoPath != null) "  |  Receipt attached" else "  |  No receipt")
             view.findViewById<TextView>(R.id.tvAmount).text =
                 "R${String.format(Locale.getDefault(), "%.2f", item.amount)}"
 
@@ -165,6 +215,19 @@ class ExpenseListActivity : AppCompatActivity() {
             } else {
                 btnPhoto.visibility = View.GONE
                 btnPhoto.setOnClickListener(null)
+            }
+
+            //tap = view the receipt, long-press = delete (with confirmation)
+            view.setOnClickListener {
+                if (item.photoPath != null) {
+                    showPhotoDialog(item.photoPath)
+                } else {
+                    Toast.makeText(this@ExpenseListActivity, "No receipt attached", Toast.LENGTH_SHORT).show()
+                }
+            }
+            view.setOnLongClickListener {
+                confirmDelete(item)
+                true
             }
 
             return view

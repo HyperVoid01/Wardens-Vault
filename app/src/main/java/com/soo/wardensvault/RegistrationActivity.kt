@@ -1,6 +1,7 @@
 package com.soo.wardensvault
 
 import android.os.Bundle
+import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -31,9 +32,25 @@ class RegistrationActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnSubmit).setOnClickListener {
             //gets user input
-            val fullName = findViewById<EditText>(R.id.etFullName).text.toString()
-            val username = findViewById<EditText>(R.id.etUsername).text.toString()
+            val fullName = findViewById<EditText>(R.id.etFullName).text.toString().trim()
+            val username = findViewById<EditText>(R.id.etUsername).text.toString().trim()
+            val email = findViewById<EditText>(R.id.etEmail).text.toString().trim()
             val password = findViewById<EditText>(R.id.etPassword).text.toString()
+            val confirm = findViewById<EditText>(R.id.etConfirmPassword).text.toString()
+
+            //validate everything before touching the database
+            val error = when {
+                fullName.isEmpty() || username.isEmpty() || email.isEmpty() ||
+                    password.isEmpty() || confirm.isEmpty() -> "Please fill in every field"
+                !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Enter a valid email address"
+                PasswordUtils.validateStrength(password) != null -> PasswordUtils.validateStrength(password)
+                password != confirm -> "Passwords do not match"
+                else -> null
+            }
+            if (error != null) {
+                Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
             //checks if user exists
             lifecycleScope.launch {
@@ -45,16 +62,11 @@ class RegistrationActivity : AppCompatActivity() {
                     ).show()
                     //creates new user and inserts into DB
                 } else {
-                    viewModel.registerUser(
-                        User(
-                            fullName = fullName,
-                            username = username,
-                            password = password
-                        )
-                    )
+                    val newId = viewModel.registerUser(fullName, username, email, password)
+                    CategorySeeder.ensureDefaults(this@RegistrationActivity, newId)
                     Toast.makeText(
                         this@RegistrationActivity,
-                        "Registered successfully",
+                        "Registered successfully - you can log in now",
                         Toast.LENGTH_SHORT
                     ).show()
                     finish()

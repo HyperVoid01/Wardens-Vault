@@ -1,72 +1,111 @@
 package com.soo.wardensvault
 
-import android.os.Bundle
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ListView
-import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.ViewModelProvider
+import android.graphics.Color
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
-class CreateCategoryActivity : AppCompatActivity() {
-    private lateinit var viewModel: CategoryViewModel
-    private lateinit var lvCategories: ListView
-    private var userId: Int = -1
+/*
+Category management: add, rename, delete and view the expenses of a category.
+A category that is still used by expenses or bills can't just be deleted - the user must
+move those records to another category first.
+ */
+class CreateCategoryActivity : ScreenActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_create_category)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+    override suspend fun render() {
+        addTitle("Categories")
+        addButton("+ Add Category") { showNameForm(null) }
 
-        userId = SessionManager.getLoggedInUserId(this)
-        if (userId == -1) {
-            Toast.makeText(this, "You must be logged in", Toast.LENGTH_SHORT).show()
-            finish()
+        val categories = db.categoryDao().getCategoriesForUser(userId)
+        if (categories.isEmpty()) {
+            addText("No categories yet. Add one to start logging expenses.", Color.WHITE)
             return
         }
-
-        viewModel = ViewModelProvider(this)[CategoryViewModel::class.java]
-        lvCategories = findViewById(R.id.lvCategories)
-
-        val etCategoryName = findViewById<EditText>(R.id.etCategoryName)
-
-        findViewById<Button>(R.id.btnAddCategory).setOnClickListener {
-            val name = etCategoryName.text.toString().trim()
-            if (name.isEmpty()) {
-                Toast.makeText(this, "Enter a category name", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+        for (category in categories) {
+            val used = db.expenseDao().countForCategory(category.id)
+            val card = addCard()
+            card.addLine(category.name, Color.WHITE, 18f, true)
+            card.addLine("$used expense(s) - tap for options", UiKit.MUTED, 13f)
+            card.setOnClickListener {
+                showOptions(category.name, listOf("View expenses", "Rename", "Delete")) { which ->
+                    when (which) {
+                        0 -> showExpenses(category)
+                        1 -> showNameForm(category)
+                        else -> deleteCategory(category)
+                    }
+                }
             }
-            etCategoryName.text.clear()
-            lifecycleScope.launch {
-                //awaited in order: insert completes, then the list is refreshed
-                viewModel.createCategory(userId, name)
-                refreshCategories()
-            }
-        }
-
-        lifecycleScope.launch {
-            refreshCategories()
         }
     }
 
-    private suspend fun refreshCategories() {
-        val categories = viewModel.getCategories(userId)
-        val names = categories.map { it.name }
-        lvCategories.adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_list_item_1,
-            names
-        )
+    private fun showNameForm(existing: Category?) {
+        val fields = listOf(FormField("name", "Category name", FormField.Kind.TEXT, existing?.name ?: ""))
+        showForm(if (existing == null) "New category" else "Rename category", fields) { v ->
+            val name = v["name"].orEmpty()
+            if (name.isEmpty()) return@showForm "Enter a category name"
+            val duplicate = db.categoryDao().getCategoriesForUser(userId).any {
+                it.name.equals(name, ignoreCase = true) && it.id != existing?.id
+            }
+            if (duplicate) return@showForm "A category with that name already exists"
+            if (existing == null) {
+                db.categoryDao().insertCategory(Category(userId = userId, name = name))
+            } else {
+                db.categoryDao().updateCategory(existing.copy(name = name))
+            }
+            null
+        }
+    }
+
+    private fun showExpenses(category: Category) {
+        lifecycleScope.launch {
+            val all = db.expenseDao().getExpensesWithCategoryForPeriod(userId, 0L, Long.MAX_VALUE)
+                .filter { it.categoryName == category.name }
+            val lines = if (all.isEmpty()) {
+                listOf("No expenses in this category yet.")
+            } else {
+                all.take(100).map { "${dateFormat.format(it.date)}  ${money(it.amount)}  ${it.description}" }
+            }
+            AlertDialog.Builder(this@CreateCategoryActivity)
+                .setTitle("${category.name} (${all.size})")
+                .setItems(lines.toTypedArray(), null)
+                .setPositiveButton("Close", null)
+                .show()
+        }
+    }
+
+    private fun deleteCategory(category: Category) {
+        lifecycleScope.launch {
+            val expenses = db.expenseDao().countForCategory(category.id)
+            val bills = db.billDao().countForCategory(category.id)
+            if (expenses + bills == 0) {
+                confirm("Delete category", "Delete \"${category.name}\"?") {
+                    lifecycleScope.launch {
+                        db.categoryDao().deleteCategory(category)
+                        refresh()
+                    }
+                }
+                return@launch
+            }
+
+            val others = db.categoryDao().getCategoriesForUser(userId).filter { it.id != category.id }
+            if (others.isEmpty()) {
+                toast("\"${category.name}\" is in use. Create another category first so its records can be moved.")
+                return@launch
+            }
+            val fields = listOf(
+                FormField(
+                    "target",
+                    "$expenses expense(s) and $bills bill(s) use \"${category.name}\". Move them to:",
+                    FormField.Kind.CHOICE, others[0].name, others.map { it.name }
+                )
+            )
+            showForm("Reassign and delete", fields, "Move & Delete") { v ->
+                val target = others.firstOrNull { it.name == v["target"] } ?: return@showForm "Pick a category"
+                db.expenseDao().reassignCategory(userId, category.id, target.id)
+                db.billDao().reassignCategory(userId, category.id, target.id)
+                db.categoryDao().deleteCategory(category)
+                null
+            }
+        }
     }
 }

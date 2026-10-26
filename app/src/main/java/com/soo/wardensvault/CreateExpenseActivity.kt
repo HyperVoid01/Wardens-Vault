@@ -50,13 +50,38 @@ class CreateExpenseActivity : AppCompatActivity() {
         ActivityResultContracts.TakePicture()
     ) { success ->
         if (success && pendingPhotoFile != null) {
-            savedPhotoPath = pendingPhotoFile!!.absolutePath
-            val ivPreview = findViewById<ImageView>(R.id.ivPhotoPreview)
-            ivPreview.visibility = android.view.View.VISIBLE
-            ivPreview.setImageURI(Uri.fromFile(pendingPhotoFile))
+            showReceipt(pendingPhotoFile!!)
         } else {
             Toast.makeText(this, "Photo capture cancelled", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    //picks an existing image and copies it into the app's receipt folder
+    private val pickImageLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            val photoDir = File(getExternalFilesDir(null), "expense_photos")
+            if (!photoDir.exists()) photoDir.mkdirs()
+            val photoFile = File(photoDir, "expense_${System.currentTimeMillis()}.jpg")
+            try {
+                contentResolver.openInputStream(uri)?.use { input ->
+                    photoFile.outputStream().use { output -> input.copyTo(output) }
+                }
+                showReceipt(photoFile)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Couldn't load that image", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    //remembers the receipt file and shows it in the preview
+    private fun showReceipt(file: File) {
+        savedPhotoPath = file.absolutePath
+        val ivPreview = findViewById<ImageView>(R.id.ivPhotoPreview)
+        ivPreview.visibility = android.view.View.VISIBLE
+        ivPreview.setImageURI(Uri.fromFile(file))
+        findViewById<Button>(R.id.btnRemovePhoto).visibility = android.view.View.VISIBLE
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -172,6 +197,18 @@ class CreateExpenseActivity : AppCompatActivity() {
             )
             takePictureLauncher.launch(photoUri)
         }
+
+        findViewById<Button>(R.id.btnPickPhoto).setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
+
+        //remove (or replace by picking/taking another) receipt before saving
+        findViewById<Button>(R.id.btnRemovePhoto).setOnClickListener {
+            savedPhotoPath = null
+            pendingPhotoFile = null
+            findViewById<ImageView>(R.id.ivPhotoPreview).visibility = android.view.View.GONE
+            findViewById<Button>(R.id.btnRemovePhoto).visibility = android.view.View.GONE
+        }
     }
 
     private fun setupSave() {
@@ -191,8 +228,8 @@ class CreateExpenseActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             val amount = amountText.toDoubleOrNull()
-            if (amount == null) {
-                Toast.makeText(this, "Enter a valid amount", Toast.LENGTH_SHORT).show()
+            if (amount == null || amount <= 0.0) {
+                Toast.makeText(this, "Enter a valid amount greater than 0", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             val date = selectedDateMillis
@@ -224,10 +261,21 @@ class CreateExpenseActivity : AppCompatActivity() {
 
             lifecycleScope.launch {
                 expenseViewModel.createExpense(expense)
+                //reward the user for logging the expense, then check achievements and budget alerts
+                val reward = GamificationManager(this@CreateExpenseActivity)
+                    .onExpenseLogged(userId)
+                val achievements = AchievementManager.checkAll(this@CreateExpenseActivity, userId)
+                val alerts = AlertEngine.notifyNew(this@CreateExpenseActivity, userId)
+                var message = "Expense saved  +${reward.xpGained} XP  +${reward.goldGained} Gold"
+                if (reward.leveledUp) message += "\nLEVEL UP! Level ${reward.newLevel}"
+                for (a in achievements) message += "\nAchievement: ${a.name}"
+                //surface the most serious budget alert right away
+                val urgent = alerts.filter { it.settingKey == AppSettings.KEY_BUDGET }.maxByOrNull { it.severity }
+                if (urgent != null) message += "\n${urgent.title}"
                 Toast.makeText(
                     this@CreateExpenseActivity,
-                    "Expense saved",
-                    Toast.LENGTH_SHORT
+                    message,
+                    Toast.LENGTH_LONG
                 ).show()
                 finish()
             }

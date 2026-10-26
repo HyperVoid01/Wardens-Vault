@@ -53,4 +53,20 @@ interface ExpenseDao {
         "WHERE userId = :userId AND date BETWEEN :from AND :to"
     )
     suspend fun getTotalSpentForPeriod(userId: Int, from: Long, to: Long): Double
+
+    //Spending that is NOT a bill payment (bill payments are saved with the description "Bill - <name>")
+    @Query(
+        "SELECT COALESCE(SUM(amount), 0) FROM expenses " +
+        "WHERE userId = :userId AND date BETWEEN :from AND :to AND description NOT LIKE 'Bill - %'"
+    )
+    suspend fun getRegularSpendForPeriod(userId: Int, from: Long, to: Long): Double
+
+    @Query("SELECT COUNT(*) FROM expenses WHERE categoryId = :categoryId")
+    suspend fun countForCategory(categoryId: Int): Int
+
+    @Query("UPDATE expenses SET categoryId = :newCategoryId WHERE categoryId = :oldCategoryId AND userId = :userId")
+    suspend fun reassignCategory(userId: Int, oldCategoryId: Int, newCategoryId: Int)
+
+    @Query("DELETE FROM expenses WHERE id = :expenseId AND userId = :userId")
+    suspend fun deleteExpense(userId: Int, expenseId: Int)
 }

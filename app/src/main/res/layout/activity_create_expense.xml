@@ -104,7 +104,15 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:backgroundTint="#3F51B5"
-            android:text="Add Photo (optional)" />
+            android:text="Take Receipt Photo (optional)" />
+
+        <Button
+            android:id="@+id/btnPickPhoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#3F51B5"
+            android:text="Choose Receipt From Gallery" />
 
         <ImageView
             android:id="@+id/ivPhotoPreview"
@@ -113,6 +121,15 @@
             android:layout_marginTop="8dp"
             android:background="#1A237E"
             android:scaleType="centerCrop"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnRemovePhoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#D95763"
+            android:text="Remove Receipt"
             android:visibility="gone" />
 
         <Button

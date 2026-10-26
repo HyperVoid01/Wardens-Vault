@@ -33,20 +33,28 @@ class LoginActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btnLogin).setOnClickListener {
             //gets user input
-            val username = findViewById<EditText>(R.id.etUsername).text.toString()
+            val username = findViewById<EditText>(R.id.etUsername).text.toString().trim()
             val password = findViewById<EditText>(R.id.etPassword).text.toString()
+            if (username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Enter your username and password", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             //calls viewModel method to check details - runs in a coroutine
             lifecycleScope.launch {
                 val user = viewModel.loginUser(username, password)
                 //procedures to follow depending on result
                 if (user != null) {
                     SessionManager.saveLoggedInUser(this@LoginActivity, user.id, user.fullName)
-                    val intent = Intent(this@LoginActivity, HomeActivity::class.java)
+                    CategorySeeder.ensureDefaults(this@LoginActivity, user.id)
+                    //first login: run the initial setup once, then the dashboard
+                    val setupDone = AppSettings.getFlag(this@LoginActivity, "setup_done_${user.id}")
+                    val target = if (setupDone) HomeActivity::class.java else SetupActivity::class.java
+                    val intent = Intent(this@LoginActivity, target)
                     intent.putExtra("fullName", user.fullName)
                     startActivity(intent)
                     finish()
                 } else {
-                    Toast.makeText(this@LoginActivity, "Invalid credentials", Toast.LENGTH_SHORT)
+                    Toast.makeText(this@LoginActivity, "Incorrect username or password", Toast.LENGTH_SHORT)
                         .show()
                 }
             }
