@@ -1,3 +1,10 @@
+// Code Attribution
+// Based on: Display content edge-to-edge in views
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/layout/edge-to-edge
+// Accessed: 27 October 2026
+// Used for: enableEdgeToEdge and window insets setup
+
 package com.soo.wardensvault
 
 import android.os.Bundle

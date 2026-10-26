@@ -1,3 +1,10 @@
+// Code Attribution
+// Based on: Create a notification
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/notifications/build-notification
+// Accessed: 27 October 2026
+// Used for: Notification channel and NotificationCompat builder
+
 package com.soo.wardensvault
 
 import android.Manifest

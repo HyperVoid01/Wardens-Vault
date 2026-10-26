@@ -1,3 +1,10 @@
+// Code Attribution
+// Based on: Application.ActivityLifecycleCallbacks
+// Author:   Android Developers
+// URL:      https://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks
+// Accessed: 27 October 2026
+// Used for: Applying the window background to every activity
+
 package com.soo.wardensvault
 
 import android.app.Activity

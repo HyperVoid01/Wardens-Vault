@@ -1,3 +1,16 @@
+// Code Attribution
+// Based on: Authenticate with Firebase using Password-Based Accounts on Android
+// Author:   Firebase
+// URL:      https://firebase.google.com/docs/auth/android/password-auth
+// Accessed: 27 October 2026
+// Used for: Firebase sign-up, sign-in, current user and sign-out
+//
+// Based on: Save simple data with SharedPreferences
+// Author:   Android Developers
+// URL:      https://developer.android.com/training/data-storage/shared-preferences
+// Accessed: 27 October 2026
+// Used for: Reading and writing SharedPreferences
+
 package com.soo.wardensvault
 
 import android.content.Context

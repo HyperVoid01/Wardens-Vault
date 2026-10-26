@@ -1,3 +1,10 @@
+// Code Attribution
+// Based on: ViewModel overview
+// Author:   Android Developers
+// URL:      https://developer.android.com/topic/libraries/architecture/viewmodel
+// Accessed: 27 October 2026
+// Used for: AndroidViewModel structure
+
 package com.soo.wardensvault
 
 import android.app.Application

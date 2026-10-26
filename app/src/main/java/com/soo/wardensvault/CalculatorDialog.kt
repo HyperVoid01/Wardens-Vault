@@ -1,3 +1,10 @@
+// Code Attribution
+// Based on: Dialogs
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/components/dialogs
+// Accessed: 27 October 2026
+// Used for: AlertDialog builder
+
 package com.soo.wardensvault
 
 import android.content.Context

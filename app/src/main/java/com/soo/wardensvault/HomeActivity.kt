@@ -1,3 +1,22 @@
+// Code Attribution
+// Based on: Display content edge-to-edge in views
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/layout/edge-to-edge
+// Accessed: 27 October 2026
+// Used for: enableEdgeToEdge and window insets setup
+//
+// Based on: Request runtime permissions
+// Author:   Android Developers
+// URL:      https://developer.android.com/training/permissions/requesting
+// Accessed: 27 October 2026
+// Used for: Notification permission request
+//
+// Based on: Use Kotlin coroutines with lifecycle-aware components
+// Author:   Android Developers
+// URL:      https://developer.android.com/topic/libraries/architecture/coroutines
+// Accessed: 27 October 2026
+// Used for: lifecycleScope.launch for database calls
+
 package com.soo.wardensvault
 
 import android.Manifest

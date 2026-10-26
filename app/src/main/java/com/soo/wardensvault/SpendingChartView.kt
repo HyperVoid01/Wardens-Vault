@@ -1,3 +1,10 @@
+// Code Attribution
+// Based on: Create a custom drawing
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/layout/custom-views/custom-drawing
+// Accessed: 27 October 2026
+// Used for: onMeasure / onDraw with Canvas and Paint
+
 package com.soo.wardensvault
 
 import android.content.Context

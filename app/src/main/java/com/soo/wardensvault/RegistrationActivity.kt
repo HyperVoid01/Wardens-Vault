@@ -1,3 +1,16 @@
+// Code Attribution
+// Based on: Display content edge-to-edge in views
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/layout/edge-to-edge
+// Accessed: 27 October 2026
+// Used for: enableEdgeToEdge and window insets setup
+//
+// Based on: Authenticate with Firebase using Password-Based Accounts on Android
+// Author:   Firebase
+// URL:      https://firebase.google.com/docs/auth/android/password-auth
+// Accessed: 27 October 2026
+// Used for: Firebase sign-up, sign-in, current user and sign-out
+
 package com.soo.wardensvault
 
 import android.os.Bundle

@@ -1,3 +1,10 @@
+// Code Attribution
+// Based on: BottomNavigationView
+// Author:   Android Developers
+// URL:      https://developer.android.com/reference/com/google/android/material/bottomnavigation/BottomNavigationView
+// Accessed: 27 October 2026
+// Used for: Bottom navigation setup and item selection
+
 package com.soo.wardensvault
 
 import android.content.Intent

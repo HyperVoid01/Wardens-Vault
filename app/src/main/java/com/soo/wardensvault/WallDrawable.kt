@@ -1,3 +1,10 @@
+// Code Attribution
+// Based on: Drawables overview
+// Author:   Android Developers
+// URL:      https://developer.android.com/guide/topics/graphics/2d-graphics
+// Accessed: 27 October 2026
+// Used for: Custom Drawable subclass
+
 package com.soo.wardensvault
 
 import android.content.Context

@@ -1,3 +1,10 @@
+// Code Attribution
+// Based on: Cloud Firestore data model
+// Author:   Firebase
+// URL:      https://firebase.google.com/docs/firestore/data-model
+// Accessed: 27 October 2026
+// Used for: Users/subcollections document layout
+
 package com.soo.wardensvault
 
 import android.content.Context
@@ -6,10 +13,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 /*
 AppDatabase - the single access point to the online database (Cloud Firestore).
-
-It used to be a Room database. It keeps the same shape so the rest of the app is unchanged:
-  AppDatabase.getDatabase(context).expenseDao().getTotalSpentForPeriod(...)
-but every DAO now reads and writes Firestore instead of a local SQLite file.
 
 Firestore layout - everything a user owns lives under their own document:
   users/{uid}                          -> User profile

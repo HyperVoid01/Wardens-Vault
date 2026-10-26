@@ -1,3 +1,10 @@
+// Code Attribution
+// Based on: Add data to Cloud Firestore
+// Author:   Firebase
+// URL:      https://firebase.google.com/docs/firestore/manage-data/add-data
+// Accessed: 27 October 2026
+// Used for: Mapping data classes to documents (custom objects, @PropertyName)
+
 package com.soo.wardensvault
 
 import com.google.firebase.firestore.PropertyName

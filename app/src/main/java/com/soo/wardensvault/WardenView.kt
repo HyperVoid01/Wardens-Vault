@@ -1,3 +1,10 @@
+// Code Attribution
+// Based on: Create custom view components
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/layout/custom-views/custom-components
+// Accessed: 27 October 2026
+// Used for: Compound view built on FrameLayout
+
 package com.soo.wardensvault
 
 import android.content.Context

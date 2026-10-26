@@ -1,3 +1,16 @@
+// Code Attribution
+// Based on: Coroutine exceptions handling
+// Author:   Kotlin
+// URL:      https://kotlinlang.org/docs/exception-handling.html
+// Accessed: 27 October 2026
+// Used for: CoroutineExceptionHandler
+//
+// Based on: Use Kotlin coroutines with lifecycle-aware components
+// Author:   Android Developers
+// URL:      https://developer.android.com/topic/libraries/architecture/coroutines
+// Accessed: 27 October 2026
+// Used for: lifecycleScope.launch for database calls
+
 package com.soo.wardensvault
 
 import android.widget.Toast

@@ -1,3 +1,28 @@
+// Code Attribution
+// Based on: Display content edge-to-edge in views
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/layout/edge-to-edge
+// Accessed: 27 October 2026
+// Used for: enableEdgeToEdge and window insets setup
+//
+// Based on: Get a result from an activity
+// Author:   Android Developers
+// URL:      https://developer.android.com/training/basics/intents/result
+// Accessed: 27 October 2026
+// Used for: TakePicture and GetContent launchers
+//
+// Based on: FileProvider
+// Author:   Android Developers
+// URL:      https://developer.android.com/reference/kotlin/androidx/core/content/FileProvider
+// Accessed: 27 October 2026
+// Used for: Content URI for the camera photo file
+//
+// Based on: Add pickers to your app
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/components/pickers
+// Accessed: 27 October 2026
+// Used for: DatePickerDialog / TimePickerDialog
+
 package com.soo.wardensvault
 
 import android.app.DatePickerDialog

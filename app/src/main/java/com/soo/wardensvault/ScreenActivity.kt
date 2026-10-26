@@ -1,3 +1,22 @@
+// Code Attribution
+// Based on: Display content edge-to-edge in views
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/layout/edge-to-edge
+// Accessed: 27 October 2026
+// Used for: enableEdgeToEdge and window insets setup
+//
+// Based on: Add pickers to your app
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/components/pickers
+// Accessed: 27 October 2026
+// Used for: DatePickerDialog / TimePickerDialog
+//
+// Based on: Dialogs
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/components/dialogs
+// Accessed: 27 October 2026
+// Used for: AlertDialog builder
+
 package com.soo.wardensvault
 
 import android.app.DatePickerDialog

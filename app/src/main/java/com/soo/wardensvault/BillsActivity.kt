@@ -1,3 +1,16 @@
+// Code Attribution
+// Based on: Property Animation Overview
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/animations/prop-animation
+// Accessed: 27 October 2026
+// Used for: ObjectAnimator / ValueAnimator effects
+//
+// Based on: Dialogs
+// Author:   Android Developers
+// URL:      https://developer.android.com/develop/ui/views/components/dialogs
+// Accessed: 27 October 2026
+// Used for: AlertDialog builder
+
 package com.soo.wardensvault
 
 import android.animation.Animator

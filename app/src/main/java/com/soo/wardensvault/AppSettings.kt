@@ -1,3 +1,10 @@
+// Code Attribution
+// Based on: Save simple data with SharedPreferences
+// Author:   Android Developers
+// URL:      https://developer.android.com/training/data-storage/shared-preferences
+// Accessed: 27 October 2026
+// Used for: Reading and writing SharedPreferences
+
 package com.soo.wardensvault
 
 import android.content.Context
