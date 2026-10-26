@@ -2,11 +2,9 @@ package com.soo.wardensvault
 
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -42,6 +40,10 @@ class ProfileActivity : AppCompatActivity() {
             return
         }
 
+        val parchment = findViewById<android.widget.ImageView>(R.id.ivParchment)
+        parchment.setImageDrawable(UiKit.crisp(this, R.drawable.scene_parchment))
+        UiKit.roundCorners(parchment, UiKit.dp(this, 12).toFloat())
+
         findViewById<TextView>(R.id.tvProfileName).text =
             SessionManager.getLoggedInFullName(this) ?: "Warden"
 
@@ -59,20 +61,7 @@ class ProfileActivity : AppCompatActivity() {
             finish()
         }
 
-        findViewById<BottomNavigationView>(R.id.bottomNavigationView).setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_bedroom -> {
-                    startActivity(Intent(this, HomeActivity::class.java))
-                    true
-                }
-                R.id.nav_map -> {
-                    startActivity(Intent(this, MapMenuActivity::class.java))
-                    true
-                }
-                R.id.nav_helmet -> true // already here
-                else -> false
-            }
-        }
+        BottomNav.attach(this, findViewById(R.id.bottomNavigationView), BottomNav.Tab.PROFILE)
     }
 
     override fun onResume() {
@@ -117,17 +106,15 @@ class ProfileActivity : AppCompatActivity() {
             findViewById<TextView>(R.id.tvProfileAchievements).text =
                 "Achievements: ${db.achievementDao().getAll(userId).size} / ${AchievementManager.all.size}"
 
-            //Warden colour tints the knight, dungeon background recolours the screen
-            val warden = findViewById<ImageView>(R.id.ivWarden)
-            val colour = equipped.firstOrNull { it.slot == Slot.COLOUR }
-            if (colour != null) {
-                warden.setColorFilter(Color.argb(110, Color.red(colour.color), Color.green(colour.color), Color.blue(colour.color)), PorterDuff.Mode.SRC_ATOP)
-            } else {
-                warden.clearColorFilter()
-            }
+            //the knight wears the equipped armour and colour; a Bedroom Theme tints this screen too
+            findViewById<WardenView>(R.id.ivWarden).show(equipped)
             val background = equipped.firstOrNull { it.slot == Slot.BACKGROUND }
             val root = findViewById<View>(R.id.main)
-            if (background != null) root.setBackgroundColor(background.color) else root.setBackgroundResource(R.drawable.ic_wall)
+            if (background != null) {
+                root.setBackgroundColor(Color.argb(150, Color.red(background.color), Color.green(background.color), Color.blue(background.color)))
+            } else {
+                root.background = null   //plain brick wall
+            }
         }
     }
 }

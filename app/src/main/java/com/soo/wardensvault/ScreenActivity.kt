@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.Spinner
@@ -34,7 +35,9 @@ data class FormField(
     val label: String,
     val kind: Kind = Kind.TEXT,
     val initial: String = "",
-    val options: List<String> = emptyList()
+    val options: List<String> = emptyList(),
+    //optional DATE fields start empty; required ones start on today's date
+    val optional: Boolean = false
 ) {
     //DATE values are epoch millis as text ("" = no date); CHOICE values are the chosen option
     enum class Kind { TEXT, NUMBER, DATE, CHOICE }
@@ -57,6 +60,9 @@ abstract class ScreenActivity : AppCompatActivity() {
 
     protected abstract suspend fun render()
 
+    //screens shown before the user reaches the app (e.g. first-time setup) hide the bar
+    protected open val showBottomNav: Boolean = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -70,15 +76,16 @@ abstract class ScreenActivity : AppCompatActivity() {
         db = AppDatabase.getDatabase(this)
         gamification = GamificationManager(this)
 
+        //no background here: the brick wall is drawn on the window (see WallDrawable)
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundResource(R.drawable.ic_wall)
         }
         val scroll = ScrollView(this)
         content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            val pad = UiKit.dp(this@ScreenActivity, 20)
-            setPadding(pad, pad, pad, pad)
+            //gap between the content and the edges of the screen
+            val side = UiKit.dp(this@ScreenActivity, 20)
+            setPadding(side, UiKit.dp(this@ScreenActivity, 24), side, UiKit.dp(this@ScreenActivity, 24))
         }
         scroll.addView(
             content,
@@ -86,8 +93,13 @@ abstract class ScreenActivity : AppCompatActivity() {
         )
         root.addView(
             scroll,
-            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
         )
+        if (showBottomNav) {
+            val nav = BottomNav.create(this)
+            root.addView(nav)
+            BottomNav.attach(this, nav, null)
+        }
         setContentView(root)
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -111,8 +123,24 @@ abstract class ScreenActivity : AppCompatActivity() {
 
     // ---- view helpers ----
 
+    //screen title on the wooden plaque (TextBox.png)
     protected fun addTitle(title: String) {
-        content.addView(UiKit.text(this, title, UiKit.GOLD, 26f, true))
+        content.addView(UiKit.title(this, title))
+    }
+
+    //full-width pixel-art picture (e.g. the Castle window) with rounded corners
+    protected fun addBanner(resId: Int): ImageView {
+        val image = ImageView(this).apply {
+            setImageDrawable(UiKit.crisp(this@ScreenActivity, resId))
+            adjustViewBounds = true                       //height follows the picture's shape
+            scaleType = ImageView.ScaleType.FIT_XY
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = UiKit.dp(this@ScreenActivity, 12) }
+        }
+        UiKit.roundCorners(image, UiKit.dp(this, 12).toFloat())
+        content.addView(image)
+        return image
     }
 
     protected fun addHeader(title: String) {
@@ -131,6 +159,22 @@ abstract class ScreenActivity : AppCompatActivity() {
         val b = UiKit.button(this, label, onClick)
         content.addView(b)
         return b
+    }
+
+    //label above an input box, for screens built in code
+    protected fun addLabeledInput(label: String, inputType: Int): EditText {
+        content.addView(UiKit.label(this, label))
+        val et = EditText(this)
+        et.inputType = inputType
+        et.setTextColor(Color.WHITE)
+        et.setBackgroundResource(R.drawable.bg_input)
+        val pad = UiKit.dp(this, 12)
+        et.setPadding(pad, pad, pad, pad)
+        et.layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = UiKit.dp(this@ScreenActivity, 6) }
+        content.addView(et)
+        return et
     }
 
     protected fun addCard(): LinearLayout {
@@ -204,7 +248,8 @@ abstract class ScreenActivity : AppCompatActivity() {
         for (field in fields) {
             layout.addView(TextView(this).apply {
                 text = field.label
-                setPadding(0, UiKit.dp(this@ScreenActivity, 10), 0, 0)
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                setPadding(0, UiKit.dp(this@ScreenActivity, 12), 0, 0)
             })
             when (field.kind) {
                 FormField.Kind.TEXT, FormField.Kind.NUMBER -> {
@@ -219,9 +264,12 @@ abstract class ScreenActivity : AppCompatActivity() {
                     getters[field.key] = { et.text.toString().trim() }
                 }
                 FormField.Kind.DATE -> {
+                    //required dates start on today so the user rarely has to pick one
                     var picked: Long? = field.initial.toLongOrNull()
+                        ?: if (field.optional) null else DateUtils.startOfToday()
                     val btn = Button(this)
-                    btn.text = picked?.let { dateFormat.format(it) } ?: "Pick a date (optional)"
+                    val emptyText = if (field.optional) "No date - tap to pick one" else "Tap to pick a date"
+                    btn.text = picked?.let { dateFormat.format(it) } ?: emptyText
                     btn.setOnClickListener {
                         val cal = Calendar.getInstance()
                         picked?.let { cal.timeInMillis = it }

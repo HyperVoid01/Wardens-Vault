@@ -4,7 +4,6 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/ic_wall"
     android:orientation="vertical"
     android:padding="35dp"
     tools:context=".CreateCategoryActivity">
@@ -33,7 +32,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:backgroundTint="#3F51B5"
+        style="@style/ActionButton"
         android:text="Add Category" />
 
     <TextView

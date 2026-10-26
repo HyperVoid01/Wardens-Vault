@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rounded see-through panel that groups content so it stands out from the wall -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#CC1A237E" />
+    <corners android:radius="10dp" />
+</shape>

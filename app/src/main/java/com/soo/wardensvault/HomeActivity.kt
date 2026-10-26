@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -72,20 +73,7 @@ class HomeActivity : AppCompatActivity() {
         }
         findViewById<TextView>(R.id.tvWelcome).text = "$greeting,\n$fullName"
 
-        findViewById<BottomNavigationView>(R.id.bottomNavigationView).setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_bedroom -> true // already home
-                R.id.nav_map -> {
-                    startActivity(Intent(this, MapMenuActivity::class.java))
-                    true
-                }
-                R.id.nav_helmet -> {
-                    startActivity(Intent(this, ProfileActivity::class.java))
-                    true
-                }
-                else -> false
-            }
-        }
+        BottomNav.attach(this, findViewById(R.id.bottomNavigationView), BottomNav.Tab.HOME)
 
         requestNotificationPermissionOnce()
     }
@@ -194,22 +182,54 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /*
+    The Notice Board (Notice Board.png) with up to 3 alerts written inside its frame.
+    Positions are fractions of the board picture, so it fits any screen width.
+     */
+    private fun noticeBoard(alerts: List<Alert>): SceneLayout {
+        val board = SceneLayout(this, BOARD_HEIGHT / BOARD_WIDTH)
+        board.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            val side = UiKit.dp(this@HomeActivity, 16)
+            setMargins(side, UiKit.dp(this@HomeActivity, 6), side, 0)
+        }
+        val frame = ImageView(this).apply {
+            setImageDrawable(UiKit.crisp(this@HomeActivity, R.drawable.ui_notice_board))
+            scaleType = ImageView.ScaleType.FIT_XY
+        }
+        board.add(frame, 0f, 0f, 1f, 1f)
+
+        //the dark area inside the frame
+        val notes = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            val pad = UiKit.dp(this@HomeActivity, 8)
+            setPadding(pad, pad, pad, pad)
+        }
+        if (alerts.isEmpty()) {
+            notes.addView(UiKit.text(this, "No notices - all is quiet in the vault.", Color.WHITE, 14f))
+        }
+        val shown = alerts.sortedByDescending { it.severity }.take(MAX_NOTICES)
+        for (alert in shown) {
+            val color = if (alert.severity >= 2) UiKit.RED else UiKit.ORANGE
+            notes.addView(UiKit.text(this, alert.title, color, 14f, true))
+            notes.addView(UiKit.text(this, alert.message, Color.WHITE, 12f))
+        }
+        if (alerts.size > MAX_NOTICES) {
+            notes.addView(UiKit.text(this, "+${alerts.size - MAX_NOTICES} more", UiKit.MUTED, 12f, true))
+        }
+        board.add(notes, 140f / BOARD_WIDTH, 480f / BOARD_HEIGHT, 750f / BOARD_WIDTH, 800f / BOARD_HEIGHT)
+        return board
+    }
+
     //category progress, alerts, upcoming bills, savings, net worth and forecast
     private suspend fun buildDashboard(alerts: List<Alert>) {
         val container = findViewById<LinearLayout>(R.id.llDashboard)
         container.removeAllViews()
 
-        //alerts
-        if (alerts.isNotEmpty()) {
-            container.addView(UiKit.text(this, "Alerts", UiKit.GOLD, 18f, true))
-            val card = UiKit.card(this)
-            for (alert in alerts) {
-                val color = if (alert.severity >= 2) UiKit.RED else UiKit.ORANGE
-                card.addView(UiKit.text(this, alert.title, color, 15f, true))
-                card.addView(UiKit.text(this, alert.message, Color.WHITE, 13f))
-            }
-            container.addView(card)
-        }
+        //alerts, pinned to the Notice Board
+        container.addView(UiKit.text(this, "Notice Board", UiKit.GOLD, 18f, true))
+        container.addView(noticeBoard(alerts))
 
         //category progress
         val now = System.currentTimeMillis()
@@ -302,5 +322,12 @@ class HomeActivity : AppCompatActivity() {
             )
         )
         container.addView(outlook)
+    }
+
+    companion object {
+        //size of the Notice Board picture, used to place the notes inside its frame
+        private const val BOARD_WIDTH = 1030f
+        private const val BOARD_HEIGHT = 1420f
+        private const val MAX_NOTICES = 3
     }
 }

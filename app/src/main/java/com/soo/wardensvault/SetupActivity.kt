@@ -16,6 +16,10 @@ class SetupActivity : ScreenActivity() {
     private lateinit var etSavings: EditText
     private lateinit var etBudget: EditText
 
+    //first-time setup happens before the main app, so no bottom navigation yet
+    override val showBottomNav: Boolean
+        get() = false
+
     override suspend fun render() {
         addTitle("Welcome, Warden!")
         addText(
@@ -23,9 +27,10 @@ class SetupActivity : ScreenActivity() {
             UiKit.MUTED, 14f
         )
 
-        etIncome = addInput("Monthly income (e.g. 15000)")
-        etSavings = addInput("Initial savings (e.g. 2000)")
-        etBudget = addInput("Monthly spending budget (e.g. 12000)")
+        val numbers = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+        etIncome = addLabeledInput("Monthly income (R)", numbers)
+        etSavings = addLabeledInput("Savings you have now (R)", numbers)
+        etBudget = addLabeledInput("Monthly spending budget (R)", numbers)
 
         addText(
             "Default categories (Groceries, Transport, ...) are created for you. " +
@@ -34,16 +39,6 @@ class SetupActivity : ScreenActivity() {
         )
         addButton("Save and continue") { save() }
         addButton("Skip for now") { finishSetup() }
-    }
-
-    private fun addInput(hintText: String): EditText {
-        val et = EditText(this)
-        et.hint = hintText
-        et.setHintTextColor(UiKit.MUTED)
-        et.setTextColor(android.graphics.Color.WHITE)
-        et.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-        content.addView(et)
-        return et
     }
 
     private fun save() {

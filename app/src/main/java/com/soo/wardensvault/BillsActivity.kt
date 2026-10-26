@@ -3,9 +3,12 @@ package com.soo.wardensvault
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.graphics.Color
+import android.graphics.drawable.ClipDrawable
 import android.view.Gravity
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -41,7 +44,7 @@ class BillsActivity : ScreenActivity() {
                 gravity = Gravity.CENTER_VERTICAL
             }
             val image = ImageView(this).apply {
-                setImageResource(enemy.drawableRes)
+                setImageDrawable(UiKit.crisp(this@BillsActivity, enemy.drawableRes))
                 layoutParams = LinearLayout.LayoutParams(UiKit.dp(this@BillsActivity, 72), UiKit.dp(this@BillsActivity, 72))
                 if (bill.isPaid) alpha = 0.35f
             }
@@ -52,6 +55,8 @@ class BillsActivity : ScreenActivity() {
                 }
             }
             info.addView(UiKit.text(this, enemy.displayName, Color.WHITE, 18f, true))
+            //enemy health: full while the bill is unpaid, empty once it's defeated
+            info.addView(healthBar(if (bill.isPaid) 0 else FULL_HEALTH))
             info.addView(
                 UiKit.text(
                     this,
@@ -91,6 +96,32 @@ class BillsActivity : ScreenActivity() {
         }
     }
 
+    /*
+    Health bar from HealthBar.png: a grey empty bar with the red bar drawn on top,
+    cut to [level] (0 = empty, FULL_HEALTH = full) with a ClipDrawable.
+     */
+    private fun healthBar(level: Int, heightDp: Int = 18): FrameLayout {
+        val frame = FrameLayout(this).apply {
+            background = UiKit.crisp(this@BillsActivity, R.drawable.hp_bar_empty)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, UiKit.dp(this@BillsActivity, heightDp)
+            ).apply { topMargin = UiKit.dp(this@BillsActivity, 6) }
+        }
+        val fill = ImageView(this).apply {
+            val clip = ClipDrawable(
+                UiKit.crisp(this@BillsActivity, R.drawable.hp_bar_full), Gravity.START, ClipDrawable.HORIZONTAL
+            )
+            clip.level = level
+            setImageDrawable(clip)
+            scaleType = ImageView.ScaleType.FIT_XY
+        }
+        frame.addView(fill, FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT
+        ))
+        frame.tag = fill   //lets the battle animation find the fill
+        return frame
+    }
+
     private fun smallButton(label: String, onClick: () -> Unit): Button {
         return UiKit.button(this, label, onClick).apply {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
@@ -108,8 +139,8 @@ class BillsActivity : ScreenActivity() {
             val currentCategory = categories.firstOrNull { it.id == existing?.categoryId }?.name ?: names[0]
             val fields = listOf(
                 FormField("name", "Bill name (e.g. Rent)", FormField.Kind.TEXT, existing?.name ?: ""),
-                FormField("amount", "Amount", FormField.Kind.NUMBER, existing?.amount?.toString() ?: ""),
-                FormField("due", "Due date", FormField.Kind.DATE, existing?.dueDate?.toString() ?: ""),
+                FormField("amount", "Amount (R)", FormField.Kind.NUMBER, existing?.amount?.toString() ?: ""),
+                FormField("due", "Next due date", FormField.Kind.DATE, existing?.dueDate?.toString() ?: ""),
                 FormField("frequency", "Recurring frequency", FormField.Kind.CHOICE,
                     existing?.frequency ?: "Monthly", listOf("Weekly", "Monthly", "Yearly")),
                 FormField("category", "Category", FormField.Kind.CHOICE, currentCategory, names)
@@ -162,7 +193,7 @@ class BillsActivity : ScreenActivity() {
     //enemy shakes, spins and fades away, then the rewards are shown
     private fun showDefeatDialog(enemy: Enemy, result: BillManager.PayResult, achievements: List<AchievementDef>) {
         val image = ImageView(this).apply {
-            setImageResource(enemy.drawableRes)
+            setImageDrawable(UiKit.crisp(this@BillsActivity, enemy.drawableRes))
             layoutParams = LinearLayout.LayoutParams(UiKit.dp(this@BillsActivity, 160), UiKit.dp(this@BillsActivity, 160))
         }
         val message = TextView(this).apply {
@@ -170,12 +201,14 @@ class BillsActivity : ScreenActivity() {
             textSize = 16f
             text = "Attacking ${enemy.displayName}..."
         }
+        val hp = healthBar(FULL_HEALTH, 22)
         val box = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             val pad = UiKit.dp(this@BillsActivity, 20)
             setPadding(pad, pad, pad, pad)
             addView(image)
+            addView(hp)
             addView(message)
         }
         val dialog = AlertDialog.Builder(this)
@@ -191,6 +224,14 @@ class BillsActivity : ScreenActivity() {
         if (award.leveledUp) sb.append("\nLEVEL UP! You are now level ${award.newLevel}")
         for (a in achievements) sb.append("\nAchievement: ${a.name}")
 
+        //the enemy's health drains while it shakes
+        val clip = (hp.tag as ImageView).drawable
+        ValueAnimator.ofInt(FULL_HEALTH, 0).apply {
+            duration = 900
+            addUpdateListener { clip.level = it.animatedValue as Int }
+            start()
+        }
+
         val shake = ObjectAnimator.ofFloat(image, "translationX", 0f, 30f, -30f, 30f, -30f, 0f)
         shake.duration = 600
         shake.addListener(object : AnimatorListenerAdapter() {
@@ -201,5 +242,9 @@ class BillsActivity : ScreenActivity() {
             }
         })
         shake.start()
+    }
+
+    companion object {
+        private const val FULL_HEALTH = 10000   //ClipDrawable's full level
     }
 }

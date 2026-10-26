@@ -24,10 +24,10 @@ class IncomeActivity : ScreenActivity() {
         for (income in incomes) {
             val card = addCard()
             card.addLine("${money(income.amount)}  -  ${income.type}", Color.WHITE, 17f, true)
-            card.addLine("${income.source}  -  ${dateFormat.format(income.date)}", UiKit.MUTED, 13f)
+            card.addLine(listOf(income.source, dateFormat.format(income.date)).filter { it.isNotEmpty() }.joinToString("  -  "), UiKit.MUTED, 13f)
             card.addLine("Tap to edit or delete", UiKit.MUTED, 11f)
             card.setOnClickListener {
-                showOptions(income.source, listOf("Edit", "Delete")) { which ->
+                showOptions(income.source.ifEmpty { income.type }, listOf("Edit", "Delete")) { which ->
                     if (which == 0) {
                         showIncomeForm(income)
                     } else {
@@ -45,8 +45,8 @@ class IncomeActivity : ScreenActivity() {
 
     private fun showIncomeForm(existing: Income?) {
         val fields = listOf(
-            FormField("amount", "Amount", FormField.Kind.NUMBER, existing?.amount?.toString() ?: ""),
-            FormField("source", "Source (e.g. Employer name)", FormField.Kind.TEXT, existing?.source ?: ""),
+            FormField("amount", "Amount (R)", FormField.Kind.NUMBER, existing?.amount?.toString() ?: ""),
+            FormField("source", "Source, e.g. employer name (optional)", FormField.Kind.TEXT, existing?.source ?: ""),
             FormField("type", "Income type", FormField.Kind.CHOICE, existing?.type ?: "Salary", types),
             FormField(
                 "date", "Date", FormField.Kind.DATE,
@@ -58,7 +58,6 @@ class IncomeActivity : ScreenActivity() {
             val source = v["source"].orEmpty()
             val date = v["date"]?.toLongOrNull()
             if (amount == null || amount <= 0.0) return@showForm "Enter a valid amount greater than 0"
-            if (source.isEmpty()) return@showForm "Enter the income source"
             if (date == null) return@showForm "Pick a date"
             val type = v["type"] ?: "Other"
             if (existing == null) {

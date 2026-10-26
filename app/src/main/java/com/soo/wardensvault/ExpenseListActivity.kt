@@ -23,6 +23,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -64,6 +65,8 @@ class ExpenseListActivity : AppCompatActivity() {
             finish()
             return
         }
+
+        BottomNav.attach(this, findViewById<BottomNavigationView>(R.id.bottomNavigationView), null)
 
         viewModel = ViewModelProvider(this)[ExpenseViewModel::class.java]
         lvExpenses = findViewById(R.id.lvExpenses)
@@ -111,8 +114,12 @@ class ExpenseListActivity : AppCompatActivity() {
         ).show()
     }
 
+    //the From / To buttons show the chosen dates
     private fun updatePeriodLabel() {
-        tvPeriod.text = "${dateFormat.format(fromMillis)} - ${dateFormat.format(toMillis)}"
+        findViewById<Button>(R.id.btnPickFrom).text = dateFormat.format(fromMillis)
+        findViewById<Button>(R.id.btnPickTo).text = dateFormat.format(toMillis)
+        val days = DateUtils.daysBetween(fromMillis, toMillis) + 1
+        tvPeriod.text = "$days day(s) selected"
     }
 
     private fun loadExpenses() {
@@ -153,11 +160,31 @@ class ExpenseListActivity : AppCompatActivity() {
         }
     }
 
+    //date, plus the times (if given) or how often it repeats (if recurring)
+    private fun whenText(item: ExpenseWithCategory): String {
+        val date = dateFormat.format(item.date)
+        if (item.recurring) {
+            val until = item.endDate?.let { " until ${dateFormat.format(it)}" } ?: ""
+            return "$date  |  Repeats ${item.frequency.lowercase()}$until"
+        }
+        val start = item.startTime ?: return date
+        val end = item.endTime
+        return if (end != null) "$date, ${timeFormat.format(start)} - ${timeFormat.format(end)}"
+        else "$date, ${timeFormat.format(start)}"
+    }
+
     //deleting an expense always asks first
     private fun confirmDelete(item: ExpenseWithCategory) {
+        val name = item.description.ifEmpty { item.categoryName }
+        val amount = "R${String.format(Locale.getDefault(), "%.2f", item.amount)}"
+        val message = if (item.recurring) {
+            "Delete the recurring expense \"$name\" ($amount)? Every repeat of it will be removed."
+        } else {
+            "Delete \"$name\" ($amount)?"
+        }
         AlertDialog.Builder(this)
             .setTitle("Delete expense")
-            .setMessage("Delete \"${item.description}\" (R${String.format(Locale.getDefault(), "%.2f", item.amount)})?")
+            .setMessage(message)
             .setPositiveButton("Delete") { _, _ ->
                 launchSafe {
                     AppDatabase.getDatabase(this@ExpenseListActivity).expenseDao().deleteExpense(userId, item.id)
@@ -200,11 +227,13 @@ class ExpenseListActivity : AppCompatActivity() {
             val item = items[position]
 
             view.findViewById<TextView>(R.id.tvCategoryName).text = item.categoryName
-            view.findViewById<TextView>(R.id.tvDescription).text = item.description
+            //description is optional, so hide the line when it's empty
+            val tvDescription = view.findViewById<TextView>(R.id.tvDescription)
+            tvDescription.text = item.description
+            tvDescription.visibility = if (item.description.isEmpty()) View.GONE else View.VISIBLE
+
             view.findViewById<TextView>(R.id.tvDateTime).text =
-                "${dateFormat.format(item.date)}, ${timeFormat.format(item.startTime)} - " +
-                timeFormat.format(item.endTime) +
-                (if (item.photoPath != null) "  |  Receipt attached" else "  |  No receipt")
+                whenText(item) + (if (item.photoPath != null) "  |  Receipt attached" else "")
             view.findViewById<TextView>(R.id.tvAmount).text =
                 "R${String.format(Locale.getDefault(), "%.2f", item.amount)}"
 

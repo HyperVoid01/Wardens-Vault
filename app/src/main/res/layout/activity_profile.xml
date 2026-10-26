@@ -5,7 +5,6 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/ic_wall"
     android:orientation="vertical"
     tools:context=".ProfileActivity">
 
@@ -18,6 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
             android:paddingBottom="16dp">
 
         <TextView
@@ -30,14 +31,28 @@
             android:textSize="34sp"
             android:textStyle="bold" />
 
-        <ImageView
-            android:id="@+id/ivWarden"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="24dp"
-            android:contentDescription="Warden"
-            android:src="@drawable/ic_knight" />
+        <!-- the knight, wearing whatever is equipped, standing in front of the parchment castle -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp">
+
+            <ImageView
+                android:id="@+id/ivParchment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:contentDescription="Castle on parchment"
+                android:scaleType="fitXY" />
+
+            <com.soo.wardensvault.WardenView
+                android:id="@+id/ivWarden"
+                android:layout_width="170dp"
+                android:layout_height="170dp"
+                android:layout_gravity="center_horizontal|bottom"
+                android:layout_marginBottom="4dp"
+                android:contentDescription="Warden" />
+        </FrameLayout>
 
         <TextView
             android:id="@+id/tvProfileName"
@@ -169,7 +184,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="24dp"
-            android:backgroundTint="#D95763"
+            style="@style/ActionButton"
             android:text="Achievements" />
 
         <Button
@@ -178,7 +193,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="8dp"
-            android:backgroundTint="#D95763"
+            style="@style/ActionButton"
             android:text="Settings" />
 
         <Button
@@ -187,7 +202,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="8dp"
-            android:backgroundTint="#D95763"
+            style="@style/ActionButton"
             android:text="Log Out" />
 
         </LinearLayout>
@@ -197,10 +212,7 @@
         android:id="@+id/bottomNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#D95763"
-        app:itemIconTint="@null"
-        app:itemIconSize="40dp"
-        app:labelVisibilityMode="unlabeled"
+        style="@style/BottomNavBar"
         app:menu="@menu/bottom_nav_menu" />
 
 </LinearLayout>

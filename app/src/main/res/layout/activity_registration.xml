@@ -1,83 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/ic_wall"
     tools:context=".RegistrationActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:paddingStart="24dp"
+        android:paddingTop="48dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="24dp">
+
+        <TextView
+            style="@style/ScreenTitle"
+            android:text="Create Account" />
+
+        <TextView
+            style="@style/FieldLabel"
+            android:text="Full name" />
 
         <EditText
             android:id="@+id/etFullName"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="Full Name"
-            android:inputType="textPersonName"
-            android:textColor="@color/white"
-            android:textColorHighlight="@color/white"
-            android:textColorHint="@color/white" />
+            style="@style/FieldInput"
+            android:inputType="textPersonName|textCapWords" />
+
+        <TextView
+            style="@style/FieldLabel"
+            android:text="Username" />
 
         <EditText
             android:id="@+id/etUsername"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="Username"
-            android:inputType="text"
-            android:textColor="@color/white"
-            android:textColorHighlight="@color/white"
-            android:textColorHint="@color/white" />
+            style="@style/FieldInput"
+            android:inputType="text" />
+
+        <TextView
+            style="@style/FieldLabel"
+            android:text="Email address" />
 
         <EditText
             android:id="@+id/etEmail"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="Email address"
-            android:inputType="textEmailAddress"
-            android:textColor="@color/white"
-            android:textColorHighlight="@color/white"
-            android:textColorHint="@color/white" />
+            style="@style/FieldInput"
+            android:inputType="textEmailAddress" />
+
+        <TextView
+            style="@style/FieldLabel"
+            android:text="Password" />
 
         <EditText
             android:id="@+id/etPassword"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="Password"
-            android:inputType="textPassword"
-            android:textColor="@color/white"
-            android:textColorHighlight="@color/white"
-            android:textColorHint="@color/white" />
+            style="@style/FieldInput"
+            android:inputType="textPassword" />
+
+        <TextView
+            style="@style/FieldNote"
+            android:text="At least 8 characters, with a letter and a number." />
+
+        <TextView
+            style="@style/FieldLabel"
+            android:text="Confirm password" />
 
         <EditText
             android:id="@+id/etConfirmPassword"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="Confirm password"
-            android:inputType="textPassword"
-            android:textColor="@color/white"
-            android:textColorHighlight="@color/white"
-            android:textColorHint="@color/white" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Password: at least 8 characters with a letter and a number"
-            android:textColor="#B0BEC5"
-            android:textSize="12sp" />
+            style="@style/FieldInput"
+            android:inputType="textPassword" />
 
         <Button
             android:id="@+id/btnSubmit"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/ActionButton"
             android:layout_marginTop="24dp"
-            android:backgroundTint="#3F51B5"
             android:text="Register" />
     </LinearLayout>
 </ScrollView>

@@ -60,7 +60,7 @@ class GoalsActivity : ScreenActivity() {
             FormField("name", "Goal name (e.g. New Car)", FormField.Kind.TEXT, existing?.name ?: ""),
             FormField("target", "Target amount", FormField.Kind.NUMBER, existing?.targetAmount?.toString() ?: ""),
             FormField("current", "Amount saved so far", FormField.Kind.NUMBER, existing?.currentAmount?.toString() ?: "0"),
-            FormField("deadline", "Deadline (optional)", FormField.Kind.DATE, existing?.deadline?.toString() ?: "")
+            FormField("deadline", "Deadline (optional)", FormField.Kind.DATE, existing?.deadline?.toString() ?: "", optional = true)
         )
         showForm(if (existing == null) "New goal" else "Edit goal", fields) { v ->
             val name = v["name"].orEmpty()

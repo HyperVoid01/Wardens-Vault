@@ -1,83 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/ic_wall"
     android:orientation="vertical"
-    android:padding="35dp"
     tools:context=".BudgetGoalActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Monthly Budget Goal"
-        android:textColor="#FFFFFF"
-        android:textSize="22sp"
-        android:textStyle="bold" />
-
-    <EditText
-        android:id="@+id/etMinGoal"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginTop="16dp"
-        android:hint="Minimum monthly goal"
-        android:inputType="numberDecimal"
-        android:textColor="@color/white"
-        android:textColorHighlight="@color/white"
-        android:textColorHint="@color/white" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-    <EditText
-        android:id="@+id/etMaxGoal"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginTop="12dp"
-        android:hint="Maximum monthly goal"
-        android:inputType="numberDecimal"
-        android:textColor="@color/white"
-        android:textColorHighlight="@color/white"
-        android:textColorHint="@color/white" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="24dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="24dp">
 
-    <Button
-        android:id="@+id/btnSaveGoal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="#3F51B5"
-        android:text="Save Goal" />
+            <TextView
+                style="@style/ScreenTitle"
+                android:text="Monthly Budget" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="24dp"
-        android:background="#3F51B5" />
+            <TextView
+                style="@style/FieldLabel"
+                android:text="Minimum monthly spending goal (R)" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="This Month So Far"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+            <EditText
+                android:id="@+id/etMinGoal"
+                style="@style/FieldInput"
+                android:inputType="numberDecimal" />
 
-    <TextView
-        android:id="@+id/tvSpentThisMonth"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textColor="#FFC107"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        tools:text="Spent: $340.00" />
+            <TextView
+                style="@style/FieldLabel"
+                android:text="Maximum monthly spending goal (R)" />
 
-    <TextView
-        android:id="@+id/tvGoalStatus"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textColor="#FFFFFF"
-        tools:text="Within your goal range" />
+            <EditText
+                android:id="@+id/etMaxGoal"
+                style="@style/FieldInput"
+                android:inputType="numberDecimal" />
+
+            <TextView
+                style="@style/FieldNote"
+                android:text="The maximum is your monthly budget. Spending between the two goals counts as on track." />
+
+            <Button
+                android:id="@+id/btnSaveGoal"
+                style="@style/ActionButton"
+                android:layout_marginTop="16dp"
+                android:text="Save Goal" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_panel"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="This Month So Far"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvSpentThisMonth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="#FFC107"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="Spent: R340.00" />
+
+                <TextView
+                    android:id="@+id/tvGoalStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="#FFFFFF"
+                    tools:text="Within your goal range" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        style="@style/BottomNavBar"
+        app:menu="@menu/bottom_nav_menu" />
 
 </LinearLayout>

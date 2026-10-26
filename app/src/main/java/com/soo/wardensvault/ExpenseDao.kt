@@ -8,6 +8,10 @@ import kotlinx.coroutines.tasks.await
 Expenses - users/{uid}/expenses/{id}
 Firestore has no SQL JOIN or SUM, so category names and totals are worked out here
 after the matching expenses are loaded.
+
+Recurring expenses are stored once. getExpensesForPeriod() turns each one into its repeats
+(one per week / month / year) that fall inside the period, so every total, chart, alert and
+the calendar count a recurring expense every time it happens.
  */
 class ExpenseDao(firestore: FirebaseFirestore) : FirestoreDao(firestore) {
 
@@ -20,14 +24,39 @@ class ExpenseDao(firestore: FirebaseFirestore) : FirestoreDao(firestore) {
         return ref.id
     }
 
-    //List of expenses for a user within a user-selectable date range, newest first
+    //Every expense (and every repeat of a recurring one) within a date range, newest first
     suspend fun getExpensesForPeriod(userId: String, from: Long, to: Long): List<Expense> {
-        return expenses(userId)
+        //one-off expenses dated inside the range
+        val oneOff = expenses(userId)
             .whereGreaterThanOrEqualTo("date", from)
             .whereLessThanOrEqualTo("date", to)
             .orderBy("date", Query.Direction.DESCENDING)
             .get().await()
             .toObjects(Expense::class.java)
+            .filter { !it.recurring }
+
+        //recurring expenses, expanded into the repeats that land inside the range
+        val repeats = expenses(userId)
+            .whereEqualTo("recurring", true)
+            .get().await()
+            .toObjects(Expense::class.java)
+            .flatMap { occurrences(it, from, to) }
+
+        return (oneOff + repeats).sortedByDescending { it.date }
+    }
+
+    //the dates a recurring expense happens on between [from] and [to]
+    private fun occurrences(expense: Expense, from: Long, to: Long): List<Expense> {
+        val last = minOf(to, expense.endDate?.let { DateUtils.endOfDay(it) } ?: Long.MAX_VALUE)
+        val result = mutableListOf<Expense>()
+        var day = expense.date
+        var steps = 0
+        while (day <= last && steps < MAX_REPEATS) {
+            if (day >= from) result.add(expense.copy(date = day))
+            day = DateUtils.addFrequency(day, expense.frequency)
+            steps++
+        }
+        return result
     }
 
     //Same period list, plus each expense's category name - drives the expense list screen.
@@ -48,7 +77,10 @@ class ExpenseDao(firestore: FirebaseFirestore) : FirestoreDao(firestore) {
                 date = e.date,
                 startTime = e.startTime,
                 endTime = e.endTime,
-                photoPath = e.photoPath
+                photoPath = e.photoPath,
+                recurring = e.recurring,
+                frequency = e.frequency,
+                endDate = e.endDate
             )
         }
     }
@@ -100,5 +132,10 @@ class ExpenseDao(firestore: FirebaseFirestore) : FirestoreDao(firestore) {
         return col(userId, "categories").get().await()
             .toObjects(Category::class.java)
             .associate { it.id to it.name }
+    }
+
+    companion object {
+        //safety limit when expanding a recurring expense (over 19 years of weekly repeats)
+        private const val MAX_REPEATS = 1000
     }
 }

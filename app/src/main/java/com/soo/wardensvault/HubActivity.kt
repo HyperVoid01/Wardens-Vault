@@ -13,6 +13,7 @@ class HubActivity : ScreenActivity() {
         when (intent.getStringExtra("hub")) {
             "treasury" -> {
                 addTitle("Treasury")
+                addBanner(R.drawable.scene_treasury)
                 addText("Income & Net Worth", UiKit.MUTED)
                 addButton("Income") { goTo(IncomeActivity::class.java) }
                 addButton("Net Worth") { goTo(NetWorthActivity::class.java) }
@@ -20,6 +21,7 @@ class HubActivity : ScreenActivity() {
             }
             "castle" -> {
                 addTitle("Castle")
+                addBanner(R.drawable.scene_castle)
                 addText("Budgets & Goals", UiKit.MUTED)
                 addButton("Monthly Budget") { goTo(BudgetGoalActivity::class.java) }
                 addButton("Category Spending Limits") { goTo(CategoryLimitsActivity::class.java) }
@@ -35,6 +37,7 @@ class HubActivity : ScreenActivity() {
             }
             else -> {
                 addTitle("Market")
+                addBanner(R.drawable.scene_market)
                 addText("Expenses", UiKit.MUTED)
                 addButton("Add Expense") { goTo(CreateExpenseActivity::class.java) }
                 addButton("Expense History") { goTo(ExpenseListActivity::class.java) }

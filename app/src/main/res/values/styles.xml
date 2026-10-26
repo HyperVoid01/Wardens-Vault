@@ -6,7 +6,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:orientation">horizontal</item>
         <item name="android:gravity">center_vertical</item>
-        <item name="android:background">@drawable/bg_menu_row</item>
+        <item name="android:background">@drawable/menu_slot</item>
         <item name="android:padding">12dp</item>
         <item name="android:layout_marginBottom">10dp</item>
         <item name="android:clickable">true</item>
@@ -25,6 +25,102 @@
         <item name="android:textColor">#FFFFFF</item>
         <item name="android:textSize">18sp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:shadowColor">#CC000000</item>
+        <item name="android:shadowDx">1</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">2</item>
+    </style>
+
+    <!-- Screen title, on the wooden plaque from TextBox.png -->
+    <style name="ScreenTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/title_plaque</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minHeight">60dp</item>
+        <item name="android:textColor">#FFF3D6</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:shadowColor">#CC000000</item>
+        <item name="android:shadowDx">2</item>
+        <item name="android:shadowDy">2</item>
+        <item name="android:shadowRadius">2</item>
+    </style>
+
+    <!-- Label shown ABOVE an input, so the user always knows what the box is for -->
+    <style name="FieldLabel">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:shadowColor">#CC000000</item>
+        <item name="android:shadowDx">1</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">2</item>
+    </style>
+
+    <!-- Text input with a dark box behind it -->
+    <style name="FieldInput">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_marginTop">6dp</item>
+        <item name="android:background">@drawable/bg_input</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColorHint">#80FFFFFF</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- Small grey note under a label or input -->
+    <style name="FieldNote">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:textColor">#CFD8DC</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:shadowColor">#CC000000</item>
+        <item name="android:shadowDx">1</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">2</item>
+    </style>
+
+    <!-- Action button drawn with the wooden pill from Button.png -->
+    <style name="ActionButton" parent="Widget.Material3.Button">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:background">@drawable/btn_pill</item>
+        <item name="backgroundTint">@null</item>
+        <item name="android:textColor">#FFF3D6</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:shadowColor">#CC000000</item>
+        <item name="android:shadowDx">1</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">2</item>
+    </style>
+
+    <!-- Button that opens a date/time picker; shows the chosen value as its text -->
+    <style name="PickerButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">6dp</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:gravity">start|center_vertical</item>
+        <item name="backgroundTint">#CC1A1A2E</item>
+        <item name="strokeColor">#9BADB7</item>
+        <item name="cornerRadius">6dp</item>
+    </style>
+
+    <!-- Bottom navigation bar (screens in XML) -->
+    <style name="BottomNavBar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">#D95763</item>
     </style>
 
 </resources>

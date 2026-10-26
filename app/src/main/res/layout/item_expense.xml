@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#1A237E"
+    android:background="@drawable/bg_panel"
     android:orientation="horizontal"
     android:padding="12dp"
     android:layout_marginBottom="2dp">
@@ -54,9 +54,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="8dp"
-        android:backgroundTint="#3F51B5"
+        style="@style/ActionButton"
         android:text="Photo"
         android:textSize="11sp"
+        android:minHeight="40dp"
         android:visibility="gone" />
 
 </LinearLayout>

@@ -2,14 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_bedroom"
-        android:icon="@drawable/skel"
-        android:title="Bedroom" />
+        android:icon="@drawable/nav_home"
+        android:title="Home" />
     <item
         android:id="@+id/nav_map"
-        android:icon="@drawable/ic_map"
-        android:title="Quests" />
+        android:icon="@drawable/nav_map"
+        android:title="Map" />
     <item
         android:id="@+id/nav_helmet"
-        android:icon="@drawable/ic_helmet"
-        android:title="Gear" />
+        android:icon="@drawable/nav_profile"
+        android:title="Profile" />
 </menu>

@@ -4,8 +4,10 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Spinner
@@ -18,32 +20,48 @@ import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+/*
+Add Expense.
+  - Category and amount are required. Description, times and a receipt photo are optional.
+  - The date starts on today.
+  - A one-off expense can have a start and end time.
+  - A recurring expense has a start date, an optional end date and how often it repeats,
+    instead of times.
+ */
 class CreateExpenseActivity : AppCompatActivity() {
     private lateinit var expenseViewModel: ExpenseViewModel
     private lateinit var categoryViewModel: CategoryViewModel
     private var userId: String = ""
 
     private lateinit var spCategory: Spinner
+    private lateinit var spFrequency: Spinner
+    private lateinit var cbRecurring: CheckBox
+    private lateinit var btnPickDate: Button
+    private lateinit var btnPickStartTime: Button
+    private lateinit var btnPickEndTime: Button
+    private lateinit var btnClearTimes: Button
+    private lateinit var btnPickEndDate: Button
     private var categories: List<Category> = emptyList()
 
-    //selected date/start/end held as epoch millis once picked
-    private var selectedDateMillis: Long? = null
-    private var selectedStartMillis: Long? = null
-    private var selectedEndMillis: Long? = null
+    private val frequencies = listOf("Weekly", "Monthly", "Yearly")
+
+    //the date starts on today; times and the end date are optional
+    private var selectedDateMillis: Long = DateUtils.startOfToday()
+    private var startMinutes: Int? = null   //minutes after midnight, e.g. 9:30 = 570
+    private var endMinutes: Int? = null
+    private var endDateMillis: Long? = null
 
     //path of the captured photo file, set once the camera returns successfully
     private var pendingPhotoFile: File? = null
     private var savedPhotoPath: String? = null
 
     private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-    private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     //modern camera-capture API - launches the camera app, writes the photo to pendingPhotoFile's Uri
     private val takePictureLauncher = registerForActivityResult(
@@ -79,9 +97,9 @@ class CreateExpenseActivity : AppCompatActivity() {
     private fun showReceipt(file: File) {
         savedPhotoPath = file.absolutePath
         val ivPreview = findViewById<ImageView>(R.id.ivPhotoPreview)
-        ivPreview.visibility = android.view.View.VISIBLE
+        ivPreview.visibility = View.VISIBLE
         ivPreview.setImageURI(Uri.fromFile(file))
-        findViewById<Button>(R.id.btnRemovePhoto).visibility = android.view.View.VISIBLE
+        findViewById<Button>(R.id.btnRemovePhoto).visibility = View.VISIBLE
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,12 +119,36 @@ class CreateExpenseActivity : AppCompatActivity() {
             return
         }
 
+        BottomNav.attach(this, findViewById<BottomNavigationView>(R.id.bottomNavigationView), null)
+
         expenseViewModel = ViewModelProvider(this)[ExpenseViewModel::class.java]
         categoryViewModel = ViewModelProvider(this)[CategoryViewModel::class.java]
         spCategory = findViewById(R.id.spCategory)
+        spFrequency = findViewById(R.id.spFrequency)
+        cbRecurring = findViewById(R.id.cbRecurring)
+        btnPickDate = findViewById(R.id.btnPickDate)
+        btnPickStartTime = findViewById(R.id.btnPickStartTime)
+        btnPickEndTime = findViewById(R.id.btnPickEndTime)
+        btnClearTimes = findViewById(R.id.btnClearTimes)
+        btnPickEndDate = findViewById(R.id.btnPickEndDate)
+
+        spFrequency.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, frequencies)
+        spFrequency.setSelection(frequencies.indexOf("Monthly"))
+
+        //pixel-art calculator for working out the amount
+        val etAmount = findViewById<EditText>(R.id.etAmount)
+        findViewById<Button>(R.id.btnCalculator).setOnClickListener {
+            CalculatorDialog.show(this, etAmount.text.toString()) { result ->
+                etAmount.setText(
+                    if (result == Math.floor(result)) result.toLong().toString()
+                    else String.format(Locale.US, "%.2f", result)
+                )
+            }
+        }
 
         loadCategories()
-        setupDatePicker()
+        setupRecurringToggle()
+        setupDatePickers()
         setupTimePickers()
         setupPhotoCapture()
         setupSave()
@@ -130,58 +172,98 @@ class CreateExpenseActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupDatePicker() {
-        val tvDate = findViewById<TextView>(R.id.tvDate)
-        findViewById<Button>(R.id.btnPickDate).setOnClickListener {
-            val cal = Calendar.getInstance()
-            DatePickerDialog(
-                this,
-                { _, year, month, dayOfMonth ->
-                    cal.set(year, month, dayOfMonth, 0, 0, 0)
-                    selectedDateMillis = cal.timeInMillis
-                    tvDate.text = dateFormat.format(cal.time)
-                },
-                cal.get(Calendar.YEAR),
-                cal.get(Calendar.MONTH),
-                cal.get(Calendar.DAY_OF_MONTH)
-            ).show()
+    //recurring: show how often + end date and hide the times; one-off: the opposite
+    private fun setupRecurringToggle() {
+        val tvDateLabel = findViewById<TextView>(R.id.tvDateLabel)
+        val llFrequency = findViewById<View>(R.id.llFrequency)
+        val llTimes = findViewById<View>(R.id.llTimes)
+        val llEndDate = findViewById<View>(R.id.llEndDate)
+
+        cbRecurring.setOnCheckedChangeListener { _, recurring ->
+            tvDateLabel.text = if (recurring) "Start date" else "Date"
+            llFrequency.visibility = if (recurring) View.VISIBLE else View.GONE
+            llEndDate.visibility = if (recurring) View.VISIBLE else View.GONE
+            llTimes.visibility = if (recurring) View.GONE else View.VISIBLE
         }
+    }
+
+    private fun setupDatePickers() {
+        btnPickDate.text = dateFormat.format(selectedDateMillis)
+        btnPickDate.setOnClickListener {
+            pickDate(selectedDateMillis) { millis ->
+                selectedDateMillis = millis
+                btnPickDate.text = dateFormat.format(millis)
+            }
+        }
+
+        btnPickEndDate.setOnClickListener {
+            pickDate(endDateMillis ?: selectedDateMillis) { millis ->
+                endDateMillis = millis
+                btnPickEndDate.text = dateFormat.format(millis)
+            }
+        }
+    }
+
+    private fun pickDate(initial: Long, onPicked: (Long) -> Unit) {
+        val cal = Calendar.getInstance().apply { timeInMillis = initial }
+        DatePickerDialog(
+            this,
+            { _, year, month, dayOfMonth ->
+                val chosen = Calendar.getInstance()
+                chosen.set(year, month, dayOfMonth, 0, 0, 0)
+                chosen.set(Calendar.MILLISECOND, 0)
+                onPicked(chosen.timeInMillis)
+            },
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH),
+            cal.get(Calendar.DAY_OF_MONTH)
+        ).show()
     }
 
     private fun setupTimePickers() {
-        val tvStart = findViewById<TextView>(R.id.tvStartTime)
-        val tvEnd = findViewById<TextView>(R.id.tvEndTime)
-
-        findViewById<Button>(R.id.btnPickStartTime).setOnClickListener {
-            pickTime { millis ->
-                selectedStartMillis = millis
-                tvStart.text = timeFormat.format(millis)
+        btnPickStartTime.setOnClickListener {
+            pickTime(startMinutes) { minutes ->
+                startMinutes = minutes
+                btnPickStartTime.text = formatMinutes(minutes)
+                btnClearTimes.visibility = View.VISIBLE
             }
         }
 
-        findViewById<Button>(R.id.btnPickEndTime).setOnClickListener {
-            pickTime { millis ->
-                selectedEndMillis = millis
-                tvEnd.text = timeFormat.format(millis)
+        btnPickEndTime.setOnClickListener {
+            pickTime(endMinutes ?: startMinutes) { minutes ->
+                endMinutes = minutes
+                btnPickEndTime.text = formatMinutes(minutes)
+                btnClearTimes.visibility = View.VISIBLE
             }
+        }
+
+        btnClearTimes.setOnClickListener {
+            startMinutes = null
+            endMinutes = null
+            btnPickStartTime.text = "No time - tap to pick one"
+            btnPickEndTime.text = "No time - tap to pick one"
+            btnClearTimes.visibility = View.GONE
         }
     }
 
-    private fun pickTime(onPicked: (Long) -> Unit) {
-        val cal = Calendar.getInstance()
+    private fun pickTime(initialMinutes: Int?, onPicked: (Int) -> Unit) {
+        val now = Calendar.getInstance()
+        val hour = initialMinutes?.div(60) ?: now.get(Calendar.HOUR_OF_DAY)
+        val minute = initialMinutes?.rem(60) ?: now.get(Calendar.MINUTE)
         TimePickerDialog(
             this,
-            { _, hourOfDay, minute ->
-                cal.set(Calendar.HOUR_OF_DAY, hourOfDay)
-                cal.set(Calendar.MINUTE, minute)
-                cal.set(Calendar.SECOND, 0)
-                onPicked(cal.timeInMillis)
-            },
-            cal.get(Calendar.HOUR_OF_DAY),
-            cal.get(Calendar.MINUTE),
+            { _, hourOfDay, minuteOfHour -> onPicked(hourOfDay * 60 + minuteOfHour) },
+            hour,
+            minute,
             true
         ).show()
     }
+
+    private fun formatMinutes(minutes: Int): String =
+        String.format(Locale.getDefault(), "%02d:%02d", minutes / 60, minutes % 60)
+
+    //the chosen time on the chosen date, as epoch millis
+    private fun timeOnDate(date: Long, minutes: Int): Long = date + minutes * 60_000L
 
     private fun setupPhotoCapture() {
         findViewById<Button>(R.id.btnTakePhoto).setOnClickListener {
@@ -206,44 +288,52 @@ class CreateExpenseActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnRemovePhoto).setOnClickListener {
             savedPhotoPath = null
             pendingPhotoFile = null
-            findViewById<ImageView>(R.id.ivPhotoPreview).visibility = android.view.View.GONE
-            findViewById<Button>(R.id.btnRemovePhoto).visibility = android.view.View.GONE
+            findViewById<ImageView>(R.id.ivPhotoPreview).visibility = View.GONE
+            findViewById<Button>(R.id.btnRemovePhoto).visibility = View.GONE
         }
     }
 
     private fun setupSave() {
         val etDescription = findViewById<EditText>(R.id.etDescription)
         val etAmount = findViewById<EditText>(R.id.etAmount)
+        val btnSave = findViewById<Button>(R.id.btnSaveExpense)
 
-        findViewById<Button>(R.id.btnSaveExpense).setOnClickListener {
+        btnSave.setOnClickListener {
             val description = etDescription.text.toString().trim()
-            val amountText = etAmount.text.toString().trim()
+            val amount = etAmount.text.toString().trim().toDoubleOrNull()
+            val recurring = cbRecurring.isChecked
 
             if (categories.isEmpty()) {
                 Toast.makeText(this, "Add a category first", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            if (description.isEmpty()) {
-                Toast.makeText(this, "Enter a description", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val amount = amountText.toDoubleOrNull()
             if (amount == null || amount <= 0.0) {
                 Toast.makeText(this, "Enter a valid amount greater than 0", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val date = selectedDateMillis
-            val start = selectedStartMillis
-            val end = selectedEndMillis
-            if (date == null || start == null || end == null) {
-                Toast.makeText(this, "Pick a date, start time, and end time", Toast.LENGTH_SHORT)
-                    .show()
-                return@setOnClickListener
-            }
-            if (end < start) {
-                Toast.makeText(this, "End time must be after start time", Toast.LENGTH_SHORT)
-                    .show()
-                return@setOnClickListener
+
+            var startTime: Long? = null
+            var endTime: Long? = null
+            var endDate: Long? = null
+            if (recurring) {
+                endDate = endDateMillis
+                if (endDate != null && endDate < selectedDateMillis) {
+                    Toast.makeText(this, "The end date must be on or after the start date", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+            } else {
+                val start = startMinutes
+                val end = endMinutes
+                if (end != null && start == null) {
+                    Toast.makeText(this, "Pick a start time too, or clear the times", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                if (start != null && end != null && end < start) {
+                    Toast.makeText(this, "End time must be after start time", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                startTime = start?.let { timeOnDate(selectedDateMillis, it) }
+                endTime = end?.let { timeOnDate(selectedDateMillis, it) }
             }
 
             val selectedCategory = categories[spCategory.selectedItemPosition]
@@ -252,32 +342,40 @@ class CreateExpenseActivity : AppCompatActivity() {
                 userId = userId,
                 categoryId = selectedCategory.id,
                 amount = amount,
-                date = date,
-                startTime = start,
-                endTime = end,
+                date = selectedDateMillis,
+                startTime = startTime,
+                endTime = endTime,
                 description = description,
-                photoPath = savedPhotoPath
+                photoPath = savedPhotoPath,
+                recurring = recurring,
+                frequency = if (recurring) spFrequency.selectedItem.toString() else "Monthly",
+                endDate = endDate
             )
 
+            btnSave.isEnabled = false
             launchSafe {
-                expenseViewModel.createExpense(expense)
-                //reward the user for logging the expense, then check achievements and budget alerts
-                val reward = GamificationManager(this@CreateExpenseActivity)
-                    .onExpenseLogged(userId)
-                val achievements = AchievementManager.checkAll(this@CreateExpenseActivity, userId)
-                val alerts = AlertEngine.notifyNew(this@CreateExpenseActivity, userId)
-                var message = "Expense saved  +${reward.xpGained} XP  +${reward.goldGained} Gold"
-                if (reward.leveledUp) message += "\nLEVEL UP! Level ${reward.newLevel}"
-                for (a in achievements) message += "\nAchievement: ${a.name}"
-                //surface the most serious budget alert right away
-                val urgent = alerts.filter { it.settingKey == AppSettings.KEY_BUDGET }.maxByOrNull { it.severity }
-                if (urgent != null) message += "\n${urgent.title}"
-                Toast.makeText(
-                    this@CreateExpenseActivity,
-                    message,
-                    Toast.LENGTH_LONG
-                ).show()
-                finish()
+                try {
+                    expenseViewModel.createExpense(expense)
+                    //reward the user for logging the expense, then check achievements and budget alerts
+                    val reward = GamificationManager(this@CreateExpenseActivity)
+                        .onExpenseLogged(userId)
+                    val achievements = AchievementManager.checkAll(this@CreateExpenseActivity, userId)
+                    val alerts = AlertEngine.notifyNew(this@CreateExpenseActivity, userId)
+                    var message = "Expense saved  +${reward.xpGained} XP  +${reward.goldGained} Gold"
+                    if (reward.leveledUp) message += "\nLEVEL UP! Level ${reward.newLevel}"
+                    for (a in achievements) message += "\nAchievement: ${a.name}"
+                    //surface the most serious budget alert right away
+                    val urgent = alerts.filter { it.settingKey == AppSettings.KEY_BUDGET }.maxByOrNull { it.severity }
+                    if (urgent != null) message += "\n${urgent.title}"
+                    Toast.makeText(
+                        this@CreateExpenseActivity,
+                        message,
+                        Toast.LENGTH_LONG
+                    ).show()
+                    finish()
+                } finally {
+                    btnSave.isEnabled = true
+                }
             }
         }
     }

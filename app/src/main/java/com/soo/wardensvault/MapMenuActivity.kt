@@ -10,6 +10,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 
 /*
 Map menu - the themed hub screen:
+  Bedroom  -> the Warden's room, changes with Armory customisations
   Castle   -> Budgets & Goals
   Dungeon  -> Bills (enemies)
   Treasury -> Income & Net Worth
@@ -36,6 +37,9 @@ class MapMenuActivity : AppCompatActivity() {
             return
         }
 
+        findViewById<android.view.View>(R.id.rowBedroom).setOnClickListener {
+            startActivity(Intent(this, BedroomActivity::class.java))
+        }
         findViewById<android.view.View>(R.id.rowCastle).setOnClickListener { openHub("castle") }
         findViewById<android.view.View>(R.id.rowDungeon).setOnClickListener {
             startActivity(Intent(this, BillsActivity::class.java))
@@ -50,20 +54,7 @@ class MapMenuActivity : AppCompatActivity() {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
 
-        findViewById<BottomNavigationView>(R.id.bottomNavigationView).setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_bedroom -> {
-                    startActivity(Intent(this, HomeActivity::class.java))
-                    true
-                }
-                R.id.nav_map -> true // already here
-                R.id.nav_helmet -> {
-                    startActivity(Intent(this, ProfileActivity::class.java))
-                    true
-                }
-                else -> false
-            }
-        }
+        BottomNav.attach(this, findViewById(R.id.bottomNavigationView), BottomNav.Tab.MAP)
     }
 
     private fun openHub(hub: String) {

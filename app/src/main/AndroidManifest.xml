@@ -13,6 +13,7 @@
     </queries>
 
     <application
+        android:name=".WardensVaultApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -67,6 +68,9 @@
             android:name=".MapMenuActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".BedroomActivity"
+            android:exported="false" />
         <activity
             android:name=".ProfileActivity"
             android:exported="false"

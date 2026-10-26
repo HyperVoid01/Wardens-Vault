@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -38,6 +39,8 @@ class BudgetGoalActivity : AppCompatActivity() {
             finish()
             return
         }
+
+        BottomNav.attach(this, findViewById<BottomNavigationView>(R.id.bottomNavigationView), null)
 
         viewModel = ViewModelProvider(this)[ExpenseViewModel::class.java]
         etMinGoal = findViewById(R.id.etMinGoal)

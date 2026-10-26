@@ -5,7 +5,6 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/ic_wall"
     android:gravity="center"
     android:orientation="vertical"
     android:padding="24dp"
@@ -52,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_margin="10dp"
-            android:backgroundTint="#3F51B5"
+            style="@style/ActionButton"
             android:text="Register"
             android:textSize="20sp" />
 
@@ -63,7 +62,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_margin="10dp"
             android:layout_marginTop="16dp"
-            android:backgroundTint="#3F51B5"
+            style="@style/ActionButton"
             android:text="Login"
             android:textSize="20sp" />
 

@@ -7,38 +7,45 @@ enum class Slot(val label: String) {
     WEAPON("Weapons"),
     SHIELD("Shields"),
     COLOUR("Warden Colours"),
-    BACKGROUND("Dungeon Backgrounds"),
+    BACKGROUND("Bedroom Themes"),
     TITLE("Titles"),
-    DECORATION("Decorations")
+    DECORATION("Bedroom Decorations")
 }
 
-//color is used for COLOUR (tint on the Warden) and BACKGROUND (profile background); 0 = unused
+/*
+One item in the Armory.
+  drawableRes - the picture layered onto the knight (armour) or placed in the bedroom (decorations)
+  color       - COLOUR: tint on the Warden; BACKGROUND: tint over the bedroom (0 = unused)
+The keys never change, so items bought before keep working.
+ */
 data class Cosmetic(
     val key: String,
     val name: String,
     val slot: Slot,
     val price: Int,
     val minLevel: Int,
-    val color: Int = 0
+    val color: Int = 0,
+    val drawableRes: Int = 0
 )
 
 object CosmeticCatalog {
     val items: List<Cosmetic> = listOf(
-        Cosmetic("helmet_iron", "Iron Helm", Slot.HELMET, 100, 1),
-        Cosmetic("helmet_knight", "Knight's Helm", Slot.HELMET, 250, 3),
-        Cosmetic("helmet_dragon", "Dragon Helm", Slot.HELMET, 600, 7),
+        //three armour sets: Crucible (starter), Death Knight (mid), Maliketh (late)
+        Cosmetic("helmet_iron", "Crucible Helm", Slot.HELMET, 100, 1, drawableRes = R.drawable.gear_crucible_helm),
+        Cosmetic("helmet_knight", "Death Knight Helm", Slot.HELMET, 250, 3, drawableRes = R.drawable.gear_deathknight_helm),
+        Cosmetic("helmet_dragon", "Maliketh Helm", Slot.HELMET, 600, 7, drawableRes = R.drawable.gear_maliketh_helm),
 
-        Cosmetic("armour_leather", "Leather Armour", Slot.ARMOUR, 120, 1),
-        Cosmetic("armour_chain", "Chainmail", Slot.ARMOUR, 300, 3),
-        Cosmetic("armour_plate", "Plate Armour", Slot.ARMOUR, 700, 8),
+        Cosmetic("armour_leather", "Crucible Armour", Slot.ARMOUR, 120, 1, drawableRes = R.drawable.gear_crucible_body),
+        Cosmetic("armour_chain", "Death Knight Armour", Slot.ARMOUR, 300, 3, drawableRes = R.drawable.gear_deathknight_body),
+        Cosmetic("armour_plate", "Maliketh Armour", Slot.ARMOUR, 700, 8, drawableRes = R.drawable.gear_maliketh_body),
 
-        Cosmetic("weapon_wood", "Wooden Sword", Slot.WEAPON, 80, 1),
-        Cosmetic("weapon_steel", "Steel Sword", Slot.WEAPON, 250, 3),
-        Cosmetic("weapon_flame", "Flame Blade", Slot.WEAPON, 650, 8),
+        Cosmetic("weapon_wood", "Crucible Sword", Slot.WEAPON, 80, 1, drawableRes = R.drawable.gear_crucible_sword),
+        Cosmetic("weapon_steel", "Death Knight Axe", Slot.WEAPON, 250, 3, drawableRes = R.drawable.gear_deathknight_sword),
+        Cosmetic("weapon_flame", "Maliketh Blade", Slot.WEAPON, 650, 8, drawableRes = R.drawable.gear_maliketh_sword),
 
-        Cosmetic("shield_wood", "Wooden Shield", Slot.SHIELD, 80, 1),
-        Cosmetic("shield_iron", "Iron Shield", Slot.SHIELD, 250, 3),
-        Cosmetic("shield_aegis", "Aegis", Slot.SHIELD, 600, 8),
+        Cosmetic("shield_wood", "Crucible Shield", Slot.SHIELD, 80, 1, drawableRes = R.drawable.gear_crucible_shield),
+        Cosmetic("shield_iron", "Death Knight Shield", Slot.SHIELD, 250, 3, drawableRes = R.drawable.gear_deathknight_shield),
+        Cosmetic("shield_aegis", "Maliketh Shield", Slot.SHIELD, 600, 8, drawableRes = R.drawable.gear_maliketh_shield),
 
         Cosmetic("colour_crimson", "Crimson", Slot.COLOUR, 150, 1, 0xFFB71C1C.toInt()),
         Cosmetic("colour_azure", "Azure", Slot.COLOUR, 150, 1, 0xFF1565C0.toInt()),
@@ -46,18 +53,18 @@ object CosmeticCatalog {
         Cosmetic("colour_purple", "Royal Purple", Slot.COLOUR, 400, 4, 0xFF6A1B9A.toInt()),
         Cosmetic("colour_gold", "Golden", Slot.COLOUR, 800, 10, 0xFFFFC107.toInt()),
 
-        Cosmetic("bg_stone", "Stone Dungeon", Slot.BACKGROUND, 100, 1, 0xFF37474F.toInt()),
-        Cosmetic("bg_crimson", "Crimson Keep", Slot.BACKGROUND, 250, 3, 0xFF4A1414.toInt()),
-        Cosmetic("bg_emerald", "Emerald Cavern", Slot.BACKGROUND, 250, 3, 0xFF14402A.toInt()),
+        Cosmetic("bg_stone", "Stone Chamber", Slot.BACKGROUND, 100, 1, 0xFF37474F.toInt()),
+        Cosmetic("bg_crimson", "Crimson Keep", Slot.BACKGROUND, 250, 3, 0xFF8B1A1A.toInt()),
+        Cosmetic("bg_emerald", "Emerald Cavern", Slot.BACKGROUND, 250, 3, 0xFF14602A.toInt()),
         Cosmetic("bg_midnight", "Midnight Vault", Slot.BACKGROUND, 500, 6, 0xFF0D1330.toInt()),
 
         Cosmetic("title_penny", "Penny Pincher", Slot.TITLE, 100, 1),
         Cosmetic("title_hunter", "Treasure Hunter", Slot.TITLE, 300, 5),
         Cosmetic("title_legend", "Vault Legend", Slot.TITLE, 900, 12),
 
-        Cosmetic("deco_torch", "Wall Torch", Slot.DECORATION, 60, 1),
-        Cosmetic("deco_banner", "War Banner", Slot.DECORATION, 150, 2),
-        Cosmetic("deco_chest", "Treasure Chest", Slot.DECORATION, 400, 5)
+        Cosmetic("deco_torch", "Wall Torch", Slot.DECORATION, 60, 1, drawableRes = R.drawable.deco_torch),
+        Cosmetic("deco_banner", "War Banner", Slot.DECORATION, 150, 2, drawableRes = R.drawable.deco_banner),
+        Cosmetic("deco_chest", "Treasure Chest", Slot.DECORATION, 400, 5, drawableRes = R.drawable.deco_chest)
     )
 
     fun byKey(key: String): Cosmetic? = items.firstOrNull { it.key == key }

@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -50,6 +51,8 @@ class CategoryTotalsActivity : AppCompatActivity() {
             finish()
             return
         }
+
+        BottomNav.attach(this, findViewById<BottomNavigationView>(R.id.bottomNavigationView), null)
 
         viewModel = ViewModelProvider(this)[ExpenseViewModel::class.java]
         lvCategoryTotals = findViewById(R.id.lvCategoryTotals)
@@ -94,8 +97,12 @@ class CategoryTotalsActivity : AppCompatActivity() {
         ).show()
     }
 
+    //the From / To buttons show the chosen dates
     private fun updatePeriodLabel() {
-        tvPeriod.text = "${dateFormat.format(fromMillis)} - ${dateFormat.format(toMillis)}"
+        findViewById<Button>(R.id.btnPickFrom).text = dateFormat.format(fromMillis)
+        findViewById<Button>(R.id.btnPickTo).text = dateFormat.format(toMillis)
+        val days = DateUtils.daysBetween(fromMillis, toMillis) + 1
+        tvPeriod.text = "$days day(s) selected"
     }
 
     private fun loadTotals() {
