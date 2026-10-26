@@ -81,7 +81,7 @@ class BillsActivity : ScreenActivity() {
             buttons.addView(smallButton("Edit") { showBillForm(bill) })
             buttons.addView(smallButton("Delete") {
                 confirm("Delete bill", "Delete ${enemy.displayName}? Past payments stay in your expense history.") {
-                    lifecycleScope.launch {
+                    launchSafe {
                         db.billDao().delete(bill)
                         refresh()
                     }
@@ -98,11 +98,11 @@ class BillsActivity : ScreenActivity() {
     }
 
     private fun showBillForm(existing: Bill?) {
-        lifecycleScope.launch {
+        launchSafe {
             val categories = db.categoryDao().getCategoriesForUser(userId)
             if (categories.isEmpty()) {
                 toast("Add a category first (Market > Categories)")
-                return@launch
+                return@launchSafe
             }
             val names = categories.map { it.name }
             val currentCategory = categories.firstOrNull { it.id == existing?.categoryId }?.name ?: names[0]

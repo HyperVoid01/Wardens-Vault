@@ -9,7 +9,7 @@ object CategorySeeder {
     )
 
     //only seeds a user who has no categories at all, so deleted defaults are never re-added
-    suspend fun ensureDefaults(context: Context, userId: Int) {
+    suspend fun ensureDefaults(context: Context, userId: String) {
         val dao = AppDatabase.getDatabase(context).categoryDao()
         if (dao.getCategoriesForUser(userId).isNotEmpty()) return
         for (name in defaults) dao.insertCategory(Category(userId = userId, name = name))

@@ -28,7 +28,7 @@ import java.util.Locale
 class CreateExpenseActivity : AppCompatActivity() {
     private lateinit var expenseViewModel: ExpenseViewModel
     private lateinit var categoryViewModel: CategoryViewModel
-    private var userId: Int = -1
+    private var userId: String = ""
 
     private lateinit var spCategory: Spinner
     private var categories: List<Category> = emptyList()
@@ -95,7 +95,7 @@ class CreateExpenseActivity : AppCompatActivity() {
         }
 
         userId = SessionManager.getLoggedInUserId(this)
-        if (userId == -1) {
+        if (userId.isEmpty()) {
             Toast.makeText(this, "You must be logged in", Toast.LENGTH_SHORT).show()
             finish()
             return
@@ -113,7 +113,7 @@ class CreateExpenseActivity : AppCompatActivity() {
     }
 
     private fun loadCategories() {
-        lifecycleScope.launch {
+        launchSafe {
             categories = categoryViewModel.getCategories(userId)
             if (categories.isEmpty()) {
                 Toast.makeText(
@@ -259,7 +259,7 @@ class CreateExpenseActivity : AppCompatActivity() {
                 photoPath = savedPhotoPath
             )
 
-            lifecycleScope.launch {
+            launchSafe {
                 expenseViewModel.createExpense(expense)
                 //reward the user for logging the expense, then check achievements and budget alerts
                 val reward = GamificationManager(this@CreateExpenseActivity)

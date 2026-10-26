@@ -1,27 +1,42 @@
 package com.soo.wardensvault
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 /*
 User Data Object
-Contains methods to interact with
-data in the users table
+Reads and writes user profiles (users/{uid}) and the username lookup (usernames/{name}).
+Passwords are handled by Firebase Authentication, never stored here.
  */
+class UserDao(firestore: FirebaseFirestore) : FirestoreDao(firestore) {
+    private val usernames = firestore.collection("usernames")
 
-@Dao
-interface UserDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUser(user: User): Long
+    //usernames are matched without caring about upper/lower case
+    private fun key(username: String) = username.trim().lowercase()
 
-    @Query("SELECT * FROM users WHERE username = :username")
-    suspend fun getUserByUsername(username: String): User?
+    //saves the profile document; the id must be the Firebase Auth uid
+    suspend fun insertUser(user: User): String {
+        userDoc(user.id).set(user).await()
+        return user.id
+    }
 
-    @Query("SELECT * FROM users WHERE id = :userId")
-    suspend fun getUserById(userId: Int): User?
+    suspend fun getUserById(userId: String): User? {
+        return userDoc(userId).get().await().toObject(User::class.java)
+    }
 
-    @Query("UPDATE users SET password = :password WHERE id = :userId")
-    suspend fun updatePassword(userId: Int, password: String)
+    suspend fun isUsernameTaken(username: String): Boolean {
+        return usernames.document(key(username)).get().await().exists()
+    }
+
+    //email linked to a username, or null if no account uses that username
+    suspend fun getEmailForUsername(username: String): String? {
+        return usernames.document(key(username)).get().await().getString("email")
+    }
+
+    //claims a username for a new account (the security rules stop it being taken twice)
+    suspend fun reserveUsername(username: String, userId: String, email: String) {
+        usernames.document(key(username))
+            .set(mapOf("uid" to userId, "email" to email))
+            .await()
+    }
 }

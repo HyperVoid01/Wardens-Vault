@@ -59,7 +59,7 @@ class SetupActivity : ScreenActivity() {
             return
         }
 
-        lifecycleScope.launch {
+        launchSafe {
             if (income > 0) {
                 db.incomeDao().insert(
                     Income(
@@ -79,7 +79,7 @@ class SetupActivity : ScreenActivity() {
             if (budget > 0) {
                 val existing = db.budgetGoalDao().getGoalForUser(userId)
                 db.budgetGoalDao().setGoal(
-                    BudgetGoal(id = existing?.id ?: 0, userId = userId, minGoal = 0.0, maxGoal = budget)
+                    BudgetGoal(id = existing?.id ?: "", userId = userId, minGoal = 0.0, maxGoal = budget)
                 )
             }
             announce(AchievementManager.checkAll(this@SetupActivity, userId))

@@ -32,7 +32,7 @@ object AchievementManager {
     fun byKey(key: String): AchievementDef? = all.firstOrNull { it.key == key }
 
     //checks every achievement; returns the ones unlocked just now
-    suspend fun checkAll(context: Context, userId: Int): List<AchievementDef> {
+    suspend fun checkAll(context: Context, userId: String): List<AchievementDef> {
         val db = AppDatabase.getDatabase(context)
         val gamification = GamificationManager(context)
 

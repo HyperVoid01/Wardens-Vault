@@ -59,7 +59,7 @@ class NetWorthActivity : ScreenActivity() {
                         showItemForm(item)
                     } else {
                         confirm("Delete", "Delete ${item.name}?") {
-                            lifecycleScope.launch {
+                            launchSafe {
                                 db.netWorthDao().deleteItem(item)
                                 refresh()
                             }

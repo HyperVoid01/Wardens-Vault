@@ -1,16 +1,23 @@
 package com.soo.wardensvault
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
-@Dao
-interface BudgetGoalDao {
-    //REPLACE lets "set a new goal" simply upsert since id is fixed once known
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun setGoal(goal: BudgetGoal): Long
+//Monthly budget goal - one document per user at users/{uid}/budget_goals/goal
+class BudgetGoalDao(firestore: FirebaseFirestore) : FirestoreDao(firestore) {
+    private fun goalDoc(userId: String) = col(userId, "budget_goals").document(GOAL_ID)
 
-    @Query("SELECT * FROM budget_goals WHERE userId = :userId LIMIT 1")
-    suspend fun getGoalForUser(userId: Int): BudgetGoal?
+    //set() overwrites the single goal document, so this both creates and updates
+    suspend fun setGoal(goal: BudgetGoal): String {
+        goalDoc(goal.userId).set(goal.copy(id = GOAL_ID)).await()
+        return GOAL_ID
+    }
+
+    suspend fun getGoalForUser(userId: String): BudgetGoal? {
+        return goalDoc(userId).get().await().toObject(BudgetGoal::class.java)
+    }
+
+    companion object {
+        const val GOAL_ID = "goal"
+    }
 }

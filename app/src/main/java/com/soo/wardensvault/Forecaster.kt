@@ -24,7 +24,7 @@ Cash flow forecast.
 object Forecaster {
     const val LOW_BALANCE = 500.0
 
-    suspend fun forecast(context: Context, userId: Int, days: Int): ForecastResult {
+    suspend fun forecast(context: Context, userId: String, days: Int): ForecastResult {
         val db = AppDatabase.getDatabase(context)
         val now = System.currentTimeMillis()
         val today = DateUtils.startOfDay(now)

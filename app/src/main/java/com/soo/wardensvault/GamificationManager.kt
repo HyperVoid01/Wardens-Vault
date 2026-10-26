@@ -1,7 +1,6 @@
 package com.soo.wardensvault
 
 import android.content.Context
-import androidx.room.withTransaction
 import java.time.LocalDate
 import kotlin.math.sqrt
 
@@ -13,6 +12,9 @@ app only has to call it (e.g. after an expense is saved).
 Level curve: level n needs 50 * (n-1)^2 total XP
   (L2 = 50, L3 = 200, L4 = 450, L5 = 800 ...)
 Gold is a cosmetic currency only - it never touches the budget calculations.
+
+Every change to the stats goes through PlayerStatsDao.update(), which runs inside a
+Firestore transaction - so a reward can never be applied twice or lost.
  */
 class GamificationManager(context: Context) {
     private val db = AppDatabase.getDatabase(context)
@@ -42,36 +44,33 @@ class GamificationManager(context: Context) {
         val leveledUp: Boolean get() = newLevel > oldLevel
     }
 
-    suspend fun getStats(userId: Int): PlayerStats {
+    suspend fun getStats(userId: String): PlayerStats {
         return statsDao.getStats(userId) ?: PlayerStats(userId = userId)
     }
 
-    //generic reward - used by every feature that gives XP/Gold (expenses now, bills/goals later)
-    suspend fun award(userId: Int, xp: Int, gold: Int, expensesLogged: Int = 0): AwardResult {
-        return db.withTransaction {
-            val current = statsDao.getStats(userId) ?: PlayerStats(userId = userId)
-            val updated = current.copy(
+    //generic reward - used by every feature that gives XP/Gold (expenses, bills, goals, achievements)
+    suspend fun award(userId: String, xp: Int, gold: Int, expensesLogged: Int = 0): AwardResult {
+        val (before, after) = statsDao.update(userId) { current ->
+            current.copy(
+                userId = userId,
                 xp = current.xp + xp,
                 gold = current.gold + gold,
                 expensesLogged = current.expensesLogged + expensesLogged
             )
-            statsDao.upsert(updated)
-            AwardResult(xp, gold, levelForXp(current.xp), levelForXp(updated.xp), updated)
-        }
+        } ?: throw IllegalStateException("Could not save rewards")
+        return AwardResult(xp, gold, levelForXp(before.xp), levelForXp(after.xp), after)
     }
 
     //spends Gold on a cosmetic; returns false (and changes nothing) if the user can't afford it
-    suspend fun spendGold(userId: Int, amount: Int): Boolean {
-        return db.withTransaction {
-            val current = statsDao.getStats(userId) ?: PlayerStats(userId = userId)
-            if (current.gold < amount) return@withTransaction false
-            statsDao.upsert(current.copy(gold = current.gold - amount))
-            true
+    suspend fun spendGold(userId: String, amount: Int): Boolean {
+        val result = statsDao.update(userId) { current ->
+            if (current.gold < amount) null else current.copy(userId = userId, gold = current.gold - amount)
         }
+        return result != null
     }
 
     //called after an expense is saved
-    suspend fun onExpenseLogged(userId: Int): AwardResult {
+    suspend fun onExpenseLogged(userId: String): AwardResult {
         return award(userId, XP_PER_EXPENSE, GOLD_PER_EXPENSE, expensesLogged = 1)
     }
 
@@ -79,7 +78,7 @@ class GamificationManager(context: Context) {
     "Staying within budget" reward: once per month, when last month's spending finished
     at or under the monthly budget. Returns null if nothing was awarded.
      */
-    suspend fun checkMonthlyBudgetReward(context: Context, userId: Int): AwardResult? {
+    suspend fun checkMonthlyBudgetReward(context: Context, userId: String): AwardResult? {
         val prevMonth = DateUtils.previousMonth(System.currentTimeMillis())
         val flagKey = "budget_reward_${userId}_${DateUtils.monthKey(prevMonth)}"
         if (AppSettings.getFlag(context, flagKey)) return null
@@ -100,35 +99,39 @@ class GamificationManager(context: Context) {
     Streak: claiming the day after the last claim extends it, any gap resets it to 1.
     Gold: 25, 30, 35 ... up to 55 from day 6; every 7th day adds a bonus.
      */
-    suspend fun claimDailyReward(userId: Int): DailyRewardResult? {
-        return db.withTransaction {
-            val today = LocalDate.now().toEpochDay()
-            val current = statsDao.getStats(userId) ?: PlayerStats(userId = userId)
-            if (current.lastClaimDay == today) return@withTransaction null
+    suspend fun claimDailyReward(userId: String): DailyRewardResult? {
+        val today = LocalDate.now().toEpochDay()
+        val (before, after) = statsDao.update(userId) { current ->
+            if (current.lastClaimDay == today) return@update null
 
             val streak = if (current.lastClaimDay == today - 1) current.loginStreak + 1 else 1
-            val bonusDay = streak % 7 == 0
-
             var gold = DAILY_BASE_GOLD + DAILY_GOLD_STEP * minOf(streak, 6)
             var xp = DAILY_XP
-            if (bonusDay) {
+            if (streak % 7 == 0) {
                 gold += BONUS_GOLD
                 xp += BONUS_XP
             }
 
-            val updated = current.copy(
+            current.copy(
+                userId = userId,
                 xp = current.xp + xp,
                 gold = current.gold + gold,
                 loginStreak = streak,
                 longestStreak = maxOf(current.longestStreak, streak),
                 lastClaimDay = today
             )
-            statsDao.upsert(updated)
-            DailyRewardResult(
-                streak, gold, xp, bonusDay,
-                levelForXp(current.xp), levelForXp(updated.xp), updated
-            )
-        }
+        } ?: return null
+
+        val streak = after.loginStreak
+        return DailyRewardResult(
+            streak = streak,
+            goldGained = after.gold - before.gold,
+            xpGained = after.xp - before.xp,
+            isBonusDay = streak % 7 == 0,
+            oldLevel = levelForXp(before.xp),
+            newLevel = levelForXp(after.xp),
+            stats = after
+        )
     }
 
     companion object {

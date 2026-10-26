@@ -22,7 +22,7 @@ class CreateCategoryActivity : ScreenActivity() {
             return
         }
         for (category in categories) {
-            val used = db.expenseDao().countForCategory(category.id)
+            val used = db.expenseDao().countForCategory(userId, category.id)
             val card = addCard()
             card.addLine(category.name, Color.WHITE, 18f, true)
             card.addLine("$used expense(s) - tap for options", UiKit.MUTED, 13f)
@@ -57,7 +57,7 @@ class CreateCategoryActivity : ScreenActivity() {
     }
 
     private fun showExpenses(category: Category) {
-        lifecycleScope.launch {
+        launchSafe {
             val all = db.expenseDao().getExpensesWithCategoryForPeriod(userId, 0L, Long.MAX_VALUE)
                 .filter { it.categoryName == category.name }
             val lines = if (all.isEmpty()) {
@@ -74,23 +74,23 @@ class CreateCategoryActivity : ScreenActivity() {
     }
 
     private fun deleteCategory(category: Category) {
-        lifecycleScope.launch {
-            val expenses = db.expenseDao().countForCategory(category.id)
-            val bills = db.billDao().countForCategory(category.id)
+        launchSafe {
+            val expenses = db.expenseDao().countForCategory(userId, category.id)
+            val bills = db.billDao().countForCategory(userId, category.id)
             if (expenses + bills == 0) {
                 confirm("Delete category", "Delete \"${category.name}\"?") {
-                    lifecycleScope.launch {
+                    launchSafe {
                         db.categoryDao().deleteCategory(category)
                         refresh()
                     }
                 }
-                return@launch
+                return@launchSafe
             }
 
             val others = db.categoryDao().getCategoriesForUser(userId).filter { it.id != category.id }
             if (others.isEmpty()) {
                 toast("\"${category.name}\" is in use. Create another category first so its records can be moved.")
-                return@launch
+                return@launchSafe
             }
             val fields = listOf(
                 FormField(

@@ -11,33 +11,33 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         expenseDao.insertExpense(expense)
     }
 
-    suspend fun getExpensesForPeriod(userId: Int, from: Long, to: Long): List<Expense> {
+    suspend fun getExpensesForPeriod(userId: String, from: Long, to: Long): List<Expense> {
         return expenseDao.getExpensesForPeriod(userId, from, to)
     }
 
     suspend fun getExpensesWithCategoryForPeriod(
-        userId: Int,
+        userId: String,
         from: Long,
         to: Long
     ): List<ExpenseWithCategory> {
         return expenseDao.getExpensesWithCategoryForPeriod(userId, from, to)
     }
 
-    suspend fun getCategoryTotalsForPeriod(userId: Int, from: Long, to: Long): List<CategoryTotal> {
+    suspend fun getCategoryTotalsForPeriod(userId: String, from: Long, to: Long): List<CategoryTotal> {
         return expenseDao.getCategoryTotalsForPeriod(userId, from, to)
     }
 
-    suspend fun getTotalSpentForPeriod(userId: Int, from: Long, to: Long): Double {
+    suspend fun getTotalSpentForPeriod(userId: String, from: Long, to: Long): Double {
         return expenseDao.getTotalSpentForPeriod(userId, from, to)
     }
 
-    suspend fun setGoal(userId: Int, min: Double, max: Double) {
+    suspend fun setGoal(userId: String, min: Double, max: Double) {
         val existing = budgetGoalDao.getGoalForUser(userId)
-        val goal = BudgetGoal(id = existing?.id ?: 0, userId = userId, minGoal = min, maxGoal = max)
+        val goal = BudgetGoal(id = existing?.id ?: "", userId = userId, minGoal = min, maxGoal = max)
         budgetGoalDao.setGoal(goal)
     }
 
-    suspend fun getGoal(userId: Int): BudgetGoal? {
+    suspend fun getGoal(userId: String): BudgetGoal? {
         return budgetGoalDao.getGoalForUser(userId)
     }
 }

@@ -32,7 +32,7 @@ class IncomeActivity : ScreenActivity() {
                         showIncomeForm(income)
                     } else {
                         confirm("Delete income", "Delete this income entry?") {
-                            lifecycleScope.launch {
+                            launchSafe {
                                 db.incomeDao().delete(income)
                                 refresh()
                             }

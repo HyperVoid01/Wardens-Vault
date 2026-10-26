@@ -1,14 +1,15 @@
 package com.soo.wardensvault
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+/*
+User profile document - stored at users/{uid} in Firestore.
+id is the Firebase Authentication uid. The password is NOT stored here:
+Firebase Authentication holds and hashes it.
 
-//User data entity. password holds a salted PBKDF2 hash (see PasswordUtils), never plain text.
-@Entity(tableName = "users")
+Every field has a default value so Firestore can rebuild the object with toObject().
+ */
 data class User(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val fullName: String,
-    val username: String,
-    val password: String,
+    val id: String = "",
+    val fullName: String = "",
+    val username: String = "",
     val email: String = ""
 )

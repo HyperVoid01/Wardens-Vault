@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    id("com.google.devtools.ksp")
     alias(libs.plugins.google.gms.google.services)
 }
 
@@ -44,18 +43,16 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.firebase.database)
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 
-//    implementation("androidx.room:room-runtime: 2.6.1")
-//    ksp("androidx.room:room-compiler:2.6.1")
-//    annotationProcessor("androidx.room:room-compiler:2.6.1")
-//    implementation("androidx.room:room-ktx:2.6.1")
+    //Firebase - the BoM keeps every Firebase library on matching versions
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
 
-    implementation("androidx.room:room-runtime:2.8.4")
-    ksp("androidx.room:room-compiler:2.8.4")
-    implementation("androidx.room:room-ktx:2.8.4")
+    //lets coroutines call .await() on Firebase Tasks instead of using callbacks
+    implementation(libs.kotlinx.coroutines.play.services)
 }

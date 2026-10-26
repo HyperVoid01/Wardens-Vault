@@ -23,7 +23,7 @@ cosmetics, bills defeated, expenses logged, login streak, goals completed and ac
 Settings and Achievements are opened from here.
  */
 class ProfileActivity : AppCompatActivity() {
-    private var userId: Int = -1
+    private var userId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +36,7 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         userId = SessionManager.getLoggedInUserId(this)
-        if (userId == -1) {
+        if (userId.isEmpty()) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
@@ -77,11 +77,11 @@ class ProfileActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (userId != -1) loadProfile()
+        if (userId.isNotEmpty()) loadProfile()
     }
 
     private fun loadProfile() {
-        lifecycleScope.launch {
+        launchSafe {
             val db = AppDatabase.getDatabase(this@ProfileActivity)
             val stats = GamificationManager(this@ProfileActivity).getStats(userId)
             val level = GamificationManager.levelForXp(stats.xp)

@@ -20,7 +20,7 @@ class BudgetGoalActivity : AppCompatActivity() {
     private lateinit var etMaxGoal: EditText
     private lateinit var tvSpentThisMonth: TextView
     private lateinit var tvGoalStatus: TextView
-    private var userId: Int = -1
+    private var userId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +33,7 @@ class BudgetGoalActivity : AppCompatActivity() {
         }
 
         userId = SessionManager.getLoggedInUserId(this)
-        if (userId == -1) {
+        if (userId.isEmpty()) {
             Toast.makeText(this, "You must be logged in", Toast.LENGTH_SHORT).show()
             finish()
             return
@@ -53,7 +53,7 @@ class BudgetGoalActivity : AppCompatActivity() {
     }
 
     private fun loadExistingGoalAndStatus() {
-        lifecycleScope.launch {
+        launchSafe {
             val goal = viewModel.getGoal(userId)
             if (goal != null) {
                 etMinGoal.setText(formatAmount(goal.minGoal))
@@ -85,7 +85,7 @@ class BudgetGoalActivity : AppCompatActivity() {
             return
         }
 
-        lifecycleScope.launch {
+        launchSafe {
             viewModel.setGoal(userId, min, max)
             Toast.makeText(this@BudgetGoalActivity, "Goal saved", Toast.LENGTH_SHORT).show()
             refreshMonthStatus(BudgetGoal(userId = userId, minGoal = min, maxGoal = max))

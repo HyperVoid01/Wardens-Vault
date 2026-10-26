@@ -18,7 +18,7 @@
             android:id="@+id/etUsername"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:hint="Username"
+            android:hint="Username or email"
             android:inputType="text"
             android:textColor="@color/white"
             android:textColorHighlight="@color/white"

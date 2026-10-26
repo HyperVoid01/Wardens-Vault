@@ -44,7 +44,7 @@ class GoalsActivity : ScreenActivity() {
                         "Add savings" -> showAddSavingsForm(goal)
                         "Edit" -> showGoalForm(goal)
                         else -> confirm("Delete goal", "Delete \"${goal.name}\"?") {
-                            lifecycleScope.launch {
+                            launchSafe {
                                 db.savingsGoalDao().delete(goal)
                                 refresh()
                             }

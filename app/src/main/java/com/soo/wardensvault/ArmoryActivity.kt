@@ -45,10 +45,10 @@ class ArmoryActivity : ScreenActivity() {
     }
 
     private fun buy(item: Cosmetic) {
-        lifecycleScope.launch {
+        launchSafe {
             if (!gamification.spendGold(userId, item.price)) {
                 toast("Not enough Gold")
-                return@launch
+                return@launchSafe
             }
             db.ownedItemDao().insert(OwnedItem(userId = userId, itemKey = item.key, equipped = false))
             setEquipped(item, true)
@@ -59,14 +59,14 @@ class ArmoryActivity : ScreenActivity() {
     }
 
     private fun equip(item: Cosmetic) {
-        lifecycleScope.launch {
+        launchSafe {
             setEquipped(item, true)
             refresh()
         }
     }
 
     private fun unequip(item: Cosmetic) {
-        lifecycleScope.launch {
+        launchSafe {
             setEquipped(item, false)
             refresh()
         }

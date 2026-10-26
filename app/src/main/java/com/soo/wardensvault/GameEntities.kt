@@ -1,150 +1,96 @@
 package com.soo.wardensvault
 
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import com.google.firebase.firestore.PropertyName
 
 /*
-Entities added for the remaining design-document features.
-Every row is scoped to a userId so accounts stay isolated.
+Documents for the remaining design-document features.
+Each one lives under users/{uid}/<collection>/{id}, so accounts stay isolated.
+Every field has a default value so Firestore can rebuild the object with toObject().
  */
 
-//Per-category monthly spending limit (one row per user + category)
-@Entity(
-    tableName = "category_limits",
-    foreignKeys = [
-        ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"], onDelete = ForeignKey.CASCADE),
-        ForeignKey(entity = Category::class, parentColumns = ["id"], childColumns = ["categoryId"], onDelete = ForeignKey.CASCADE)
-    ]
-)
+//Per-category monthly spending limit - document id is the categoryId (one per category)
 data class CategoryLimit(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,
-    val categoryId: Int,
-    val limitAmount: Double
+    val id: String = "",
+    val userId: String = "",
+    val categoryId: String = "",
+    val limitAmount: Double = 0.0
 )
 
 //Income entry: Salary / Freelance / Bonus / Other
-@Entity(
-    tableName = "incomes",
-    foreignKeys = [
-        ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"], onDelete = ForeignKey.CASCADE)
-    ]
-)
 data class Income(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,
-    val amount: Double,
-    val source: String,
-    val type: String,
-    val date: Long
+    val id: String = "",
+    val userId: String = "",
+    val amount: Double = 0.0,
+    val source: String = "",
+    val type: String = "",
+    val date: Long = 0L
 )
 
 //Recurring bill - shown in the game as an enemy. dueDate is the current cycle's due date.
-@Entity(
-    tableName = "bills",
-    foreignKeys = [
-        ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"], onDelete = ForeignKey.CASCADE),
-        ForeignKey(entity = Category::class, parentColumns = ["id"], childColumns = ["categoryId"], onDelete = ForeignKey.CASCADE)
-    ]
-)
 data class Bill(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,
-    val name: String,
-    val amount: Double,
-    val dueDate: Long,
-    val frequency: String,   // Weekly / Monthly / Yearly
-    val categoryId: Int,
-    val isPaid: Boolean
+    val id: String = "",
+    val userId: String = "",
+    val name: String = "",
+    val amount: Double = 0.0,
+    val dueDate: Long = 0L,
+    val frequency: String = "Monthly",   // Weekly / Monthly / Yearly
+    val categoryId: String = "",
+    //Firestore would otherwise save a Kotlin "isX" Boolean as "x" and fail to read it back
+    @get:PropertyName("isPaid") @field:PropertyName("isPaid")
+    val isPaid: Boolean = false
 )
 
 //History of every bill payment ("enemy defeated")
-@Entity(
-    tableName = "bill_payments",
-    foreignKeys = [
-        ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"], onDelete = ForeignKey.CASCADE)
-    ]
-)
 data class BillPayment(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,
-    val billName: String,
-    val amount: Double,
-    val paidDate: Long
+    val id: String = "",
+    val userId: String = "",
+    val billName: String = "",
+    val amount: Double = 0.0,
+    val paidDate: Long = 0L
 )
 
-//Savings goal with optional deadline
-@Entity(
-    tableName = "savings_goals",
-    foreignKeys = [
-        ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"], onDelete = ForeignKey.CASCADE)
-    ]
-)
+//Savings goal with optional deadline. createdAt keeps newest-first ordering (Firestore ids aren't ordered)
 data class SavingsGoal(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,
-    val name: String,
-    val targetAmount: Double,
-    val currentAmount: Double,
-    val deadline: Long?,
-    val completed: Boolean
+    val id: String = "",
+    val userId: String = "",
+    val name: String = "",
+    val targetAmount: Double = 0.0,
+    val currentAmount: Double = 0.0,
+    val deadline: Long? = null,
+    val completed: Boolean = false,
+    val createdAt: Long = 0L
 )
 
 //Asset or liability used for the net worth calculation
-@Entity(
-    tableName = "net_worth_items",
-    foreignKeys = [
-        ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"], onDelete = ForeignKey.CASCADE)
-    ]
-)
 data class NetWorthItem(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,
-    val name: String,
-    val kind: String,        // ASSET or LIABILITY
-    val groupName: String,   // Cash, Savings, Investments, Other assets, Loans, Credit card debt, Other debts
-    val amount: Double
+    val id: String = "",
+    val userId: String = "",
+    val name: String = "",
+    val kind: String = "",        // ASSET or LIABILITY
+    val groupName: String = "",   // Cash, Savings, Investments, Other assets, Loans, Credit card debt, Other debts
+    val amount: Double = 0.0
 )
 
-//One net worth value per day, so the change over time can be shown
-@Entity(
-    tableName = "net_worth_snapshots",
-    foreignKeys = [
-        ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"], onDelete = ForeignKey.CASCADE)
-    ]
-)
+//One net worth value per day (document id is the day), so the change over time can be shown
 data class NetWorthSnapshot(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,
-    val date: Long,
-    val netWorth: Double
+    val id: String = "",
+    val userId: String = "",
+    val date: Long = 0L,
+    val netWorth: Double = 0.0
 )
 
-//Achievements the user has unlocked (definitions live in AchievementManager)
-@Entity(
-    tableName = "unlocked_achievements",
-    foreignKeys = [
-        ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"], onDelete = ForeignKey.CASCADE)
-    ]
-)
+//Achievements the user has unlocked - document id is the achievementKey, so each unlocks once
 data class UnlockedAchievement(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,
-    val achievementKey: String,
-    val unlockedAt: Long
+    val id: String = "",
+    val userId: String = "",
+    val achievementKey: String = "",
+    val unlockedAt: Long = 0L
 )
 
-//Cosmetic items bought with Gold (definitions live in CosmeticCatalog)
-@Entity(
-    tableName = "owned_items",
-    foreignKeys = [
-        ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"], onDelete = ForeignKey.CASCADE)
-    ]
-)
+//Cosmetic items bought with Gold - document id is the itemKey (definitions live in CosmeticCatalog)
 data class OwnedItem(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,
-    val itemKey: String,
-    val equipped: Boolean
+    val id: String = "",
+    val userId: String = "",
+    val itemKey: String = "",
+    val equipped: Boolean = false
 )

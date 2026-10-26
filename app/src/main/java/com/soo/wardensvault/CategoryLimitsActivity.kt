@@ -70,7 +70,7 @@ class CategoryLimitsActivity : ScreenActivity() {
             } else {
                 db.categoryLimitDao().upsert(
                     CategoryLimit(
-                        id = existing?.id ?: 0, userId = userId,
+                        id = existing?.id ?: "", userId = userId,
                         categoryId = total.categoryId, limitAmount = amount
                     )
                 )

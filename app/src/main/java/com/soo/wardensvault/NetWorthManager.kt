@@ -21,7 +21,7 @@ object NetWorthManager {
     }
 
     //stores today's net worth (one snapshot per day) so changes over time can be shown
-    suspend fun recordSnapshot(context: Context, userId: Int): Totals {
+    suspend fun recordSnapshot(context: Context, userId: String): Totals {
         val dao = AppDatabase.getDatabase(context).netWorthDao()
         val totals = totals(dao.getItems(userId))
         val today = DateUtils.startOfToday()

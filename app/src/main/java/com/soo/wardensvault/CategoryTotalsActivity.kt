@@ -26,7 +26,7 @@ class CategoryTotalsActivity : AppCompatActivity() {
     private lateinit var lvCategoryTotals: ListView
     private lateinit var tvPeriod: TextView
     private lateinit var tvGrandTotal: TextView
-    private var userId: Int = -1
+    private var userId: String = ""
 
     //defaults to the current calendar month, same convention as the expense list screen
     private var fromMillis: Long = DateUtils.startOfCurrentMonth()
@@ -45,7 +45,7 @@ class CategoryTotalsActivity : AppCompatActivity() {
         }
 
         userId = SessionManager.getLoggedInUserId(this)
-        if (userId == -1) {
+        if (userId.isEmpty()) {
             Toast.makeText(this, "You must be logged in", Toast.LENGTH_SHORT).show()
             finish()
             return
@@ -104,7 +104,7 @@ class CategoryTotalsActivity : AppCompatActivity() {
                 .show()
             return
         }
-        lifecycleScope.launch {
+        launchSafe {
             val totals = viewModel.getCategoryTotalsForPeriod(userId, fromMillis, toMillis)
             val grandTotal = totals.sumOf { it.total }
             tvGrandTotal.text =
@@ -119,7 +119,7 @@ class CategoryTotalsActivity : AppCompatActivity() {
     ) : BaseAdapter() {
         override fun getCount() = items.size
         override fun getItem(position: Int) = items[position]
-        override fun getItemId(position: Int) = items[position].categoryId.toLong()
+        override fun getItemId(position: Int) = position.toLong()
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val view = convertView ?: LayoutInflater.from(this@CategoryTotalsActivity)

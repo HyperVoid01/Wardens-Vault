@@ -1,26 +1,36 @@
 package com.soo.wardensvault
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Update
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import kotlinx.coroutines.tasks.await
 
-@Dao
-interface CategoryDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCategory(category: Category): Long
+//Categories - users/{uid}/categories/{id}
+class CategoryDao(firestore: FirebaseFirestore) : FirestoreDao(firestore) {
 
-    @Update
-    suspend fun updateCategory(category: Category)
+    //creates the category with a new auto-generated id and returns that id
+    suspend fun insertCategory(category: Category): String {
+        val ref = col(category.userId, "categories").document()
+        ref.set(category.copy(id = ref.id)).await()
+        return ref.id
+    }
 
-    @Delete
-    suspend fun deleteCategory(category: Category)
+    suspend fun updateCategory(category: Category) {
+        col(category.userId, "categories").document(category.id).set(category).await()
+    }
 
-    @Query("SELECT * FROM categories WHERE userId = :userId ORDER BY name ASC")
-    suspend fun getCategoriesForUser(userId: Int): List<Category>
+    suspend fun deleteCategory(category: Category) {
+        col(category.userId, "categories").document(category.id).delete().await()
+    }
 
-    @Query("SELECT * FROM categories WHERE id = :categoryId")
-    suspend fun getCategoryById(categoryId: Int): Category?
+    suspend fun getCategoriesForUser(userId: String): List<Category> {
+        return col(userId, "categories")
+            .orderBy("name", Query.Direction.ASCENDING)
+            .get().await()
+            .toObjects(Category::class.java)
+    }
+
+    suspend fun getCategoryById(userId: String, categoryId: String): Category? {
+        return col(userId, "categories").document(categoryId).get().await()
+            .toObject(Category::class.java)
+    }
 }

@@ -1,30 +1,31 @@
 package com.soo.wardensvault
 
 import android.content.Context
+import com.google.firebase.auth.FirebaseAuth
 
 /*
 SessionManager
-Persists which user is currently logged in using SharedPreferences,
-so any Activity/ViewModel can find out who is logged in without
-needing it passed through every Intent.
+Firebase Authentication remembers who is logged in (it survives app restarts on its own),
+so the user id comes straight from Firebase. SharedPreferences only caches the full name
+so screens can show it without a database read.
  */
 object SessionManager {
     private const val PREFS_NAME = "warden_session"
-    private const val KEY_USER_ID = "logged_in_user_id"
     private const val KEY_FULL_NAME = "logged_in_full_name"
 
-    fun saveLoggedInUser(context: Context, userId: Int, fullName: String) {
+    //userId is kept in the signature so existing callers don't change; Firebase already knows it
+    @Suppress("UNUSED_PARAMETER")
+    fun saveLoggedInUser(context: Context, userId: String, fullName: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit()
-            .putInt(KEY_USER_ID, userId)
             .putString(KEY_FULL_NAME, fullName)
             .apply()
     }
 
-    //returns -1 if no user is logged in
-    fun getLoggedInUserId(context: Context): Int {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getInt(KEY_USER_ID, -1)
+    //the Firebase uid of the logged-in user, or "" if nobody is logged in
+    @Suppress("UNUSED_PARAMETER")
+    fun getLoggedInUserId(context: Context): String {
+        return FirebaseAuth.getInstance().currentUser?.uid ?: ""
     }
 
     fun getLoggedInFullName(context: Context): String? {
@@ -32,7 +33,9 @@ object SessionManager {
         return prefs.getString(KEY_FULL_NAME, null)
     }
 
+    //signs out of Firebase and forgets the cached name
     fun clearSession(context: Context) {
+        FirebaseAuth.getInstance().signOut()
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().clear().apply()
     }

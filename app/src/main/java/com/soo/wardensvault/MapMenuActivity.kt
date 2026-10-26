@@ -30,7 +30,7 @@ class MapMenuActivity : AppCompatActivity() {
             insets
         }
 
-        if (SessionManager.getLoggedInUserId(this) == -1) {
+        if (SessionManager.getLoggedInUserId(this).isEmpty()) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return

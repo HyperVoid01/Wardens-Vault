@@ -1,24 +1,9 @@
 package com.soo.wardensvault
 
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
-
-//One row per user - their current min/max monthly spending goal
-@Entity(
-    tableName = "budget_goals",
-    foreignKeys = [
-        ForeignKey(
-            entity = User::class,
-            parentColumns = ["id"],
-            childColumns = ["userId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ]
-)
+//One document per user (users/{uid}/budget_goals/goal) - their current min/max monthly spending goal
 data class BudgetGoal(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,
-    val minGoal: Double,
-    val maxGoal: Double
+    val id: String = "",
+    val userId: String = "",
+    val minGoal: Double = 0.0,
+    val maxGoal: Double = 0.0
 )

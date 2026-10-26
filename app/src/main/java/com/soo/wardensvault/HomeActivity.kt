@@ -35,7 +35,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var viewModel: ExpenseViewModel
     private lateinit var gamification: GamificationManager
     private lateinit var db: AppDatabase
-    private var userId: Int = -1
+    private var userId: String = ""
     private var dashboardJob: Job? = null
     private val dateFormat = SimpleDateFormat("dd MMM", Locale.getDefault())
 
@@ -53,7 +53,7 @@ class HomeActivity : AppCompatActivity() {
         }
 
         userId = SessionManager.getLoggedInUserId(this)
-        if (userId == -1) {
+        if (userId.isEmpty()) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
@@ -92,7 +92,7 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (userId != -1) refreshDashboard()
+        if (userId.isNotEmpty()) refreshDashboard()
     }
 
     //Android 13+ needs the user's permission before notifications can be shown
@@ -109,7 +109,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun refreshDashboard() {
         dashboardJob?.cancel()
-        dashboardJob = lifecycleScope.launch {
+        dashboardJob = launchSafe {
             CategorySeeder.ensureDefaults(this@HomeActivity, userId)
             BillManager.rollover(this@HomeActivity, userId)
 

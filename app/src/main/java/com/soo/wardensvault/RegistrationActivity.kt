@@ -12,6 +12,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import androidx.lifecycle.ViewModelProvider
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 
 
 class RegistrationActivity : AppCompatActivity() {
@@ -30,7 +33,8 @@ class RegistrationActivity : AppCompatActivity() {
         //Creates instance of UserViewsModel
         viewModel = ViewModelProvider(this)[UserViewModel::class.java]
 
-        findViewById<Button>(R.id.btnSubmit).setOnClickListener {
+        val btnSubmit = findViewById<Button>(R.id.btnSubmit)
+        btnSubmit.setOnClickListener {
             //gets user input
             val fullName = findViewById<EditText>(R.id.etFullName).text.toString().trim()
             val username = findViewById<EditText>(R.id.etUsername).text.toString().trim()
@@ -42,6 +46,7 @@ class RegistrationActivity : AppCompatActivity() {
             val error = when {
                 fullName.isEmpty() || username.isEmpty() || email.isEmpty() ||
                     password.isEmpty() || confirm.isEmpty() -> "Please fill in every field"
+                username.contains("@") -> "Usernames can't contain @"
                 !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Enter a valid email address"
                 PasswordUtils.validateStrength(password) != null -> PasswordUtils.validateStrength(password)
                 password != confirm -> "Passwords do not match"
@@ -52,24 +57,40 @@ class RegistrationActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            //checks if user exists
+            btnSubmit.isEnabled = false
             lifecycleScope.launch {
-                if (viewModel.isUsernameTaken(username)) {
-                    Toast.makeText(
-                        this@RegistrationActivity,
-                        "Username already taken",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    //creates new user and inserts into DB
-                } else {
+                try {
+                    //checks if username is taken before creating the account
+                    if (viewModel.isUsernameTaken(username)) {
+                        Toast.makeText(
+                            this@RegistrationActivity,
+                            "Username already taken",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        btnSubmit.isEnabled = true
+                        return@launch
+                    }
+                    //creates the account, then its default categories while still signed in
                     val newId = viewModel.registerUser(fullName, username, email, password)
                     CategorySeeder.ensureDefaults(this@RegistrationActivity, newId)
+                    //Firebase signs new users in automatically - sign out so they log in as before
+                    SessionManager.clearSession(this@RegistrationActivity)
                     Toast.makeText(
                         this@RegistrationActivity,
                         "Registered successfully - you can log in now",
                         Toast.LENGTH_SHORT
                     ).show()
                     finish()
+                } catch (e: Exception) {
+                    val message = when (e) {
+                        is UsernameTakenException -> "Username already taken"
+                        is FirebaseAuthUserCollisionException -> "An account with that email already exists"
+                        is FirebaseAuthWeakPasswordException -> "Password is too weak"
+                        is FirebaseNetworkException -> "No internet connection"
+                        else -> "Registration failed: ${e.message}"
+                    }
+                    Toast.makeText(this@RegistrationActivity, message, Toast.LENGTH_LONG).show()
+                    btnSubmit.isEnabled = true
                 }
             }
         }

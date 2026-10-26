@@ -27,7 +27,7 @@ notifyNew() also sends each one as a notification (once, thanks to the unique ke
  */
 object AlertEngine {
 
-    suspend fun compute(context: Context, userId: Int): List<Alert> {
+    suspend fun compute(context: Context, userId: String): List<Alert> {
         val db = AppDatabase.getDatabase(context)
         val alerts = mutableListOf<Alert>()
         val now = System.currentTimeMillis()
@@ -120,7 +120,7 @@ object AlertEngine {
     }
 
     //sends a notification for every alert that hasn't been sent before; returns all current alerts
-    suspend fun notifyNew(context: Context, userId: Int): List<Alert> {
+    suspend fun notifyNew(context: Context, userId: String): List<Alert> {
         val alerts = compute(context, userId)
         val prefs = AppSettings.prefs(context)
         val prefKey = "notified_$userId"

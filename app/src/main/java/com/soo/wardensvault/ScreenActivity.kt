@@ -48,7 +48,7 @@ abstract class ScreenActivity : AppCompatActivity() {
     //@JvmField: without it Kotlin generates getUserId(), which clashes with Android's hidden
     //Context.getUserId() and makes the system think the app runs as another phone user
     @JvmField
-    protected var userId: Int = -1
+    protected var userId: String = ""
     protected lateinit var content: LinearLayout
     protected lateinit var db: AppDatabase
     protected lateinit var gamification: GamificationManager
@@ -62,7 +62,7 @@ abstract class ScreenActivity : AppCompatActivity() {
         enableEdgeToEdge()
 
         userId = SessionManager.getLoggedInUserId(this)
-        if (userId == -1) {
+        if (userId.isEmpty()) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
@@ -98,12 +98,12 @@ abstract class ScreenActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (userId != -1) refresh()
+        if (userId.isNotEmpty()) refresh()
     }
 
     protected fun refresh() {
         renderJob?.cancel()
-        renderJob = lifecycleScope.launch {
+        renderJob = launchSafe {
             content.removeAllViews()
             render()
         }
@@ -265,7 +265,7 @@ abstract class ScreenActivity : AppCompatActivity() {
             dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
                 val values = HashMap<String, String>()
                 for ((key, getter) in getters) values[key] = getter()
-                lifecycleScope.launch {
+                launchSafe {
                     val error = onSubmit(values)
                     if (error == null) {
                         dialog.dismiss()

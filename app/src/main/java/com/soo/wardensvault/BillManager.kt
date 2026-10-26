@@ -12,7 +12,7 @@ Bill / enemy rules.
 object BillManager {
 
     //brings enemies back to life for the next billing cycle once their due date has passed
-    suspend fun rollover(context: Context, userId: Int) {
+    suspend fun rollover(context: Context, userId: String) {
         val dao = AppDatabase.getDatabase(context).billDao()
         val today = DateUtils.startOfToday()
         for (bill in dao.getAll(userId)) {
@@ -26,7 +26,7 @@ object BillManager {
 
     data class PayResult(val award: GamificationManager.AwardResult, val early: Boolean)
 
-    suspend fun payBill(context: Context, userId: Int, bill: Bill, amount: Double): PayResult {
+    suspend fun payBill(context: Context, userId: String, bill: Bill, amount: Double): PayResult {
         val db = AppDatabase.getDatabase(context)
         val now = System.currentTimeMillis()
         val today = DateUtils.startOfDay(now)

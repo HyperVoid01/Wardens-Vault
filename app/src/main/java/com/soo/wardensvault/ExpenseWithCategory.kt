@@ -2,7 +2,7 @@ package com.soo.wardensvault
 
 //Expense joined with its category name - what the expense list screen displays
 data class ExpenseWithCategory(
-    val id: Int,
+    val id: String,
     val categoryName: String,
     val description: String,
     val amount: Double,

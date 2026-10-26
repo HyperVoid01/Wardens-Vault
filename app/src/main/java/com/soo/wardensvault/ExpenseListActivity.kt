@@ -35,7 +35,7 @@ class ExpenseListActivity : AppCompatActivity() {
     private lateinit var tvPeriod: TextView
     private lateinit var tvTotal: TextView
     private lateinit var spFilterCategory: Spinner
-    private var userId: Int = -1
+    private var userId: String = ""
 
     //null = show every category
     private var filterCategory: String? = null
@@ -59,7 +59,7 @@ class ExpenseListActivity : AppCompatActivity() {
         }
 
         userId = SessionManager.getLoggedInUserId(this)
-        if (userId == -1) {
+        if (userId.isEmpty()) {
             Toast.makeText(this, "You must be logged in", Toast.LENGTH_SHORT).show()
             finish()
             return
@@ -121,7 +121,7 @@ class ExpenseListActivity : AppCompatActivity() {
                 .show()
             return
         }
-        lifecycleScope.launch {
+        launchSafe {
             val all = viewModel.getExpensesWithCategoryForPeriod(userId, fromMillis, toMillis)
             val category = filterCategory
             val expenses = if (category == null) all else all.filter { it.categoryName == category }
@@ -133,7 +133,7 @@ class ExpenseListActivity : AppCompatActivity() {
 
     //spinner of "All categories" + the user's categories; changing it reloads the list
     private fun setupCategoryFilter() {
-        lifecycleScope.launch {
+        launchSafe {
             val categories = AppDatabase.getDatabase(this@ExpenseListActivity)
                 .categoryDao().getCategoriesForUser(userId)
             val options = listOf("All categories") + categories.map { it.name }
@@ -159,7 +159,7 @@ class ExpenseListActivity : AppCompatActivity() {
             .setTitle("Delete expense")
             .setMessage("Delete \"${item.description}\" (R${String.format(Locale.getDefault(), "%.2f", item.amount)})?")
             .setPositiveButton("Delete") { _, _ ->
-                lifecycleScope.launch {
+                launchSafe {
                     AppDatabase.getDatabase(this@ExpenseListActivity).expenseDao().deleteExpense(userId, item.id)
                     loadExpenses()
                 }
@@ -192,7 +192,7 @@ class ExpenseListActivity : AppCompatActivity() {
     ) : BaseAdapter() {
         override fun getCount() = items.size
         override fun getItem(position: Int) = items[position]
-        override fun getItemId(position: Int) = items[position].id.toLong()
+        override fun getItemId(position: Int) = position.toLong()
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val view = convertView ?: LayoutInflater.from(this@ExpenseListActivity)
